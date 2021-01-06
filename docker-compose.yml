@@ -16,7 +16,7 @@ services:
     container_name: bank_app_db
     restart: always
     environment:
-      POSTGRES_PASSWORD: changeme
+      POSTGRES_PASSWORD: 3523
       POSTGRES_DB: bank_app_db
     volumes:
       - db-data:/var/lib/postgresql/data
