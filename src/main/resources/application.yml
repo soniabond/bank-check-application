@@ -1,0 +1,14 @@
+server:
+  http2:
+    enabled: true
+  error:
+    include-message: always
+    include-binding-errors: always
+
+card-checking:
+  security:
+    jwt:
+      secret: GnBGcKJvQJ93KCVVxXxkYL7RNWqYACCaMT9pNXmx7R949KKnrFsad3GVD3VkK3Qw
+      key-id: card-check/dev
+      issuer: card-check
+      expireIn: 600000

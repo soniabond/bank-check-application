@@ -1,0 +1,28 @@
+version: '3'
+
+services:
+  message-store:
+    image: bank_app:0.0.1-SNAPSHOT
+    container_name: bank_app
+    environment:
+      MESSAGE_DB_HOST: db
+    depends_on:
+      - db
+    ports:
+      - 8080:8080
+
+  db:
+    image: postgres:latest
+    container_name: bank_app_db
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: changeme
+      POSTGRES_DB: bank_app_db
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+
+volumes:
+  db-data:
+    driver: local
