@@ -12,3 +12,18 @@ card-checking:
       key-id: card-check/dev
       issuer: card-check
       expireIn: 600000
+    admins:
+      sofiia:
+        email: soniabondarenko1@gmail.com
+        password: fua9eeF1ahphooy5eth9ooth1iebee0AeWahyob4lai4cha3goohaewoh0gicieJ
+
+springdoc:
+  show-login-endpoint: true
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/bankapp_db
+    username: postgres
+    driver-class-name: org.postgresql.Driver
+    password: 3523
+

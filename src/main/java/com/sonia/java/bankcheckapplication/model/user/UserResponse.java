@@ -3,8 +3,8 @@ package com.sonia.java.bankcheckapplication.model.user;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.time.Instant;
+import java.util.EnumSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class UserResponse {
 
@@ -17,20 +17,18 @@ public class UserResponse {
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Instant createdAt;
 
-    private Set<String> authorities;
+    private Set<KnownAuthority> authorities;
 
     public static UserResponse fromUser(CardChekingUser user){
         UserResponse userResponse = new UserResponse();
         userResponse.id = user.getId();
         userResponse.firstName = user.getFirstName();
         userResponse.createdAt = user.getCreatedAt();
-        userResponse.authorities = user.getAuthorities()
-                .stream()
-                .map(cardCheckingUserAuthority -> cardCheckingUserAuthority.getValue().name())
-                .collect(Collectors.toSet());
+        userResponse.authorities = EnumSet.copyOf(user.getAuthorities().keySet());
         userResponse.email = user.getEmail();
         return userResponse;
     }
+
 
     public long getId() {
         return id;
@@ -64,11 +62,11 @@ public class UserResponse {
         this.createdAt = createdAt;
     }
 
-    public Set<String> getAuthorities() {
+    public Set<KnownAuthority> getAuthorities() {
         return authorities;
     }
 
-    public void setAuthorities(Set<String> authorities) {
+    public void setAuthorities(Set<KnownAuthority> authorities) {
         this.authorities = authorities;
     }
 }

@@ -1,4 +1,4 @@
-package com.sonia.java.bankcheckapplication.config.security;
+package com.sonia.java.bankcheckapplication.config.security.properties;
 
 
 import org.springframework.boot.context.properties.ConfigurationProperties;

@@ -22,10 +22,6 @@ public class CardCheckingUserAuthority {
     @ManyToMany(mappedBy = "authorities")
     private List<CardChekingUser> users;
 
-    public enum KnownAuthority{
-        USER_ROLE
-    }
-
     public Integer getId() {
         return id;
     }

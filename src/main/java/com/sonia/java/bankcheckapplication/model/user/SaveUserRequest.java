@@ -5,7 +5,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
-public class SaveRegularUserRequest {
+public class SaveUserRequest {
 
     @Email
     @NotNull
@@ -18,6 +18,11 @@ public class SaveRegularUserRequest {
     @NotBlank
     private String firstName;
 
+    public SaveUserRequest(@Email @NotNull String email, @NotBlank @Size(min = 8) String password, @NotBlank String firstName) {
+        this.email = email;
+        this.password = password;
+        this.firstName = firstName;
+    }
 
     public String getEmail() {
         return email;

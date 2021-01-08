@@ -1,4 +1,4 @@
-version: '3'
+version: '3.2'
 
 services:
   message-store:
@@ -13,16 +13,17 @@ services:
 
   db:
     image: postgres:latest
-    container_name: bank_app_db
+    container_name: bankappdb
     restart: always
     environment:
       POSTGRES_PASSWORD: 3523
-      POSTGRES_DB: bank_app_db
+      POSTGRES_DB: bankapp_db
+      POSTGRES_USER: postgres
     volumes:
-      - db-data:/var/lib/postgresql/data
+      - db-vol:/var/lib/postgresql/datadb
     ports:
       - 5432:5432
 
 volumes:
-  db-data:
+  db-vol:
     driver: local

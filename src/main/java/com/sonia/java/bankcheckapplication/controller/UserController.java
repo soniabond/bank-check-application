@@ -1,10 +1,9 @@
 package com.sonia.java.bankcheckapplication.controller;
 
 
-import com.sonia.java.bankcheckapplication.model.user.SaveRegularUserRequest;
+import com.sonia.java.bankcheckapplication.model.user.SaveUserRequest;
 import com.sonia.java.bankcheckapplication.model.user.UserResponse;
 import com.sonia.java.bankcheckapplication.service.UserService;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,7 +22,7 @@ public class UserController {
     }
 
     @PostMapping
-    public UserResponse register(@RequestBody @Valid SaveRegularUserRequest request){
+    public UserResponse register(@RequestBody @Valid SaveUserRequest request){
        return userService.create(request);
     }
 }
