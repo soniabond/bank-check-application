@@ -23,7 +23,8 @@ import java.time.Instant;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.sonia.java.bankcheckapplication.model.user.CardCheckingUserAuthority.KnownAuthority.USER_ROLE;
+import static com.sonia.java.bankcheckapplication.model.user.CardCheckingUserAuthority.KnownAuthority.ROLE_USER;
+
 
 
 @Service
@@ -43,17 +44,21 @@ public class UserService implements UserDetailsService {
     }
 
     public UserResponse create(SaveRegularUserRequest request){
+        System.out.println("point 1");
         CardChekingUser user = new CardChekingUser();
-        var authority = authorityRepository.getByValue(USER_ROLE)
-                .orElseThrow(()-> CardCheckExceptions.authorityNotFound(USER_ROLE.name()));
+        var authority = authorityRepository.getByValue(ROLE_USER)
+                .orElseThrow(()-> CardCheckExceptions.authorityNotFound(ROLE_USER.name()));
+        System.out.println("point repository");
 
         user.setAuthorities(Set.of(authority));
         user.setEmail(request.getEmail());
         user.setFirstName(request.getFirstName());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setCreatedAt(Instant.now());
+        System.out.println("point save");
 
         userRepository.save(user);
+        System.out.println("point 2");
         return UserResponse.fromUser(user);
 
     }

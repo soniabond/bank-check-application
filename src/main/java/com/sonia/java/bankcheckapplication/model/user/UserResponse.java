@@ -20,6 +20,7 @@ public class UserResponse {
     private Set<String> authorities;
 
     public static UserResponse fromUser(CardChekingUser user){
+        System.out.println("point 3");
         UserResponse userResponse = new UserResponse();
         userResponse.id = user.getId();
         userResponse.firstName = user.getFirstName();
@@ -29,6 +30,7 @@ public class UserResponse {
                 .map(cardCheckingUserAuthority -> cardCheckingUserAuthority.getValue().name())
                 .collect(Collectors.toSet());
         userResponse.email = user.getEmail();
+        System.out.println("point 4");
         return userResponse;
     }
 

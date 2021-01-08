@@ -54,7 +54,7 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                     new UsernamePasswordAuthenticationToken(
                             credentials.getEmail(),
                             credentials.getPassword(),
-                            Set.of(new SimpleGrantedAuthority(CardCheckingUserAuthority.KnownAuthority.USER_ROLE.name()))
+                            Set.of(new SimpleGrantedAuthority(CardCheckingUserAuthority.KnownAuthority.ROLE_USER.name()))
                             )
             );
         } catch (IOException e) {

@@ -12,3 +12,13 @@ card-checking:
       key-id: card-check/dev
       issuer: card-check
       expireIn: 600000
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/bankapp_db
+    driver-class-name: org.postgresql.Driver
+    username: postgres
+    password: 3523
+  jpa:
+    open-in-view: false
+

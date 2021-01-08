@@ -86,6 +86,36 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-maven-plugin</artifactId>
+                <version>4.0.3</version>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.0.1</version>
+                <executions>
+                    <execution>
+                        <id>copy-resources</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <encoding>UTF-8</encoding>
+                            <!--classpath:db/migration is target/classes/db/migration-->
+                            <outputDirectory>${project.build.outputDirectory}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>src/main/resources/</directory>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
@@ -95,6 +125,37 @@
                 <version>1.0</version>
             </plugin>
         </plugins>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
     </build>
+
+    <profiles>
+        <profile>
+            <id>js-flyway</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <!--common properties for database connection-->
+                <db.driver>oracle.jdbc.driver.OracleDriver</db.driver>
+                <db.url>jdbc:postgresql://localhost:5432/bankapp_db</db.url>
+                <db.username>postgres</db.username>
+                <db.password>3523</db.password>
+                <db.adm.user>postgres</db.adm.user>
+                <db.adm.pass>3523</db.adm.pass>
+
+                <!-- Properties are prefixed with flyway. -->
+                <flyway.user>postgres}</flyway.user>
+                <flyway.password>3523</flyway.password>
+                <flyway.driver>org.postgresql.Driver</flyway.driver>
+                <flyway.url>jdbc:postgresql://localhost:5432/bankapp_db</flyway.url>
+                <flyway.locations>db/migration/</flyway.locations>
+            </properties>
+        </profile>
+    </profiles>
 
 </project>

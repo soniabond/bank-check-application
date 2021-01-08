@@ -23,7 +23,7 @@ public class CardCheckingUserAuthority {
     private List<CardChekingUser> users;
 
     public enum KnownAuthority{
-        USER_ROLE
+        ROLE_USER
     }
 
     public Integer getId() {

@@ -1,7 +1,7 @@
 version: '3'
 
 services:
-  message-store:
+  bank_service:
     image: bank_app:0.0.1-SNAPSHOT
     container_name: bank_app
     environment:
@@ -13,11 +13,11 @@ services:
 
   db:
     image: postgres:latest
-    container_name: bank_app_db
+    container_name: bankappdb
     restart: always
     environment:
       POSTGRES_PASSWORD: 3523
-      POSTGRES_DB: bank_app_db
+      POSTGRES_DB: bankapp_db
     volumes:
       - db-data:/var/lib/postgresql/data
     ports:
