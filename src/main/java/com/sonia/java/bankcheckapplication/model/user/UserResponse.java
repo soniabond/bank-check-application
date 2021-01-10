@@ -25,9 +25,9 @@ public class UserResponse {
         userResponse.id = user.getId();
         userResponse.firstName = user.getFirstName();
         userResponse.createdAt = user.getCreatedAt();
-        userResponse.authorities = user.getAuthorities()
+        userResponse.authorities = user.getAuthorities().keySet()
                 .stream()
-                .map(cardCheckingUserAuthority -> cardCheckingUserAuthority.getValue().name())
+                .map(cardCheckingUserAuthority -> cardCheckingUserAuthority.getAuthority())
                 .collect(Collectors.toSet());
         userResponse.email = user.getEmail();
         System.out.println("point 4");

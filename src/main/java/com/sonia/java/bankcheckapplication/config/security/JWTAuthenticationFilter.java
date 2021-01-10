@@ -2,7 +2,7 @@ package com.sonia.java.bankcheckapplication.config.security;
 
 import com.auth0.jwt.JWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sonia.java.bankcheckapplication.model.user.CardCheckingUserAuthority;
+import com.sonia.java.bankcheckapplication.model.user.KnownAuthority;
 import com.sonia.java.bankcheckapplication.model.user.UserLoginRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -54,7 +54,7 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                     new UsernamePasswordAuthenticationToken(
                             credentials.getEmail(),
                             credentials.getPassword(),
-                            Set.of(new SimpleGrantedAuthority(CardCheckingUserAuthority.KnownAuthority.ROLE_USER.name()))
+                            Set.of(new SimpleGrantedAuthority(KnownAuthority.ROLE_USER.name()))
                             )
             );
         } catch (IOException e) {

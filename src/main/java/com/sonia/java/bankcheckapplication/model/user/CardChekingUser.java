@@ -4,6 +4,8 @@ import org.hibernate.annotations.NaturalId;
 
 import javax.persistence.*;
 import java.time.Instant;
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.Set;
 
 @Entity
@@ -30,7 +32,9 @@ public class CardChekingUser {
     @ManyToMany
     @JoinTable(name = "user_authorities", joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "authority_id", referencedColumnName = "id"))
-    private Set<CardCheckingUserAuthority> authorities;
+    @MapKeyEnumerated(EnumType.STRING)
+    @MapKey(name = "value")
+    private Map<KnownAuthority, CardCheckingUserAuthority> authorities = new EnumMap<>(KnownAuthority.class);
 
     public String getPassword() {
         return password;
@@ -72,11 +76,11 @@ public class CardChekingUser {
         this.createdAt = createdAt;
     }
 
-    public Set<CardCheckingUserAuthority> getAuthorities() {
+    public Map<KnownAuthority, CardCheckingUserAuthority> getAuthorities() {
         return authorities;
     }
 
-    public void setAuthorities(Set<CardCheckingUserAuthority> authorities) {
+    public void setAuthorities(Map<KnownAuthority, CardCheckingUserAuthority> authorities) {
         this.authorities = authorities;
     }
 }

@@ -2,10 +2,7 @@ package com.sonia.java.bankcheckapplication.service;
 
 
 import com.sonia.java.bankcheckapplication.exceptions.CardCheckExceptions;
-import com.sonia.java.bankcheckapplication.model.user.CardCheckingUserAuthority;
-import com.sonia.java.bankcheckapplication.model.user.CardChekingUser;
-import com.sonia.java.bankcheckapplication.model.user.SaveRegularUserRequest;
-import com.sonia.java.bankcheckapplication.model.user.UserResponse;
+import com.sonia.java.bankcheckapplication.model.user.*;
 import com.sonia.java.bankcheckapplication.repository.UserAuthorityRepository;
 import com.sonia.java.bankcheckapplication.repository.UserRepository;
 import org.springframework.security.core.GrantedAuthority;
@@ -17,18 +14,18 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.sonia.java.bankcheckapplication.exceptions.CardCheckExceptions.*;
 
 import java.time.Instant;
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.sonia.java.bankcheckapplication.model.user.CardCheckingUserAuthority.KnownAuthority.ROLE_USER;
+import static com.sonia.java.bankcheckapplication.model.user.KnownAuthority.ROLE_USER;
 
 
 
 @Service
-@Transactional
 public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
@@ -43,35 +40,52 @@ public class UserService implements UserDetailsService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public UserResponse create(SaveRegularUserRequest request){
-        System.out.println("point 1");
-        CardChekingUser user = new CardChekingUser();
-        var authority = authorityRepository.getByValue(ROLE_USER)
-                .orElseThrow(()-> CardCheckExceptions.authorityNotFound(ROLE_USER.name()));
-        System.out.println("point repository");
-
-        user.setAuthorities(Set.of(authority));
-        user.setEmail(request.getEmail());
-        user.setFirstName(request.getFirstName());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setCreatedAt(Instant.now());
-        System.out.println("point save");
-
-        userRepository.save(user);
-        System.out.println("point 2");
-        return UserResponse.fromUser(user);
-
+    public UserResponse create(SaveUserRequest request){
+        validateUniqueFields(request);
+        return UserResponse.fromUser(save(request, getRegularUserAuthorities()));
     }
 
 
     @Override
+    @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 
         CardChekingUser user = userRepository.findByEmail(email).orElseThrow(() ->
                 new UsernameNotFoundException("User with mail " + email+" not found"));
-        Set<GrantedAuthority> grantedAuthorities = user.getAuthorities().stream()
-                .map(authority -> new SimpleGrantedAuthority(authority.getValue().name()))
+        Set<GrantedAuthority> grantedAuthorities = user.getAuthorities().keySet().stream()
+                .map(authority -> new SimpleGrantedAuthority(authority.getAuthority()))
                 .collect(Collectors.toSet());
         return new User(user.getEmail(), user.getPassword(), grantedAuthorities);
     }
+
+    private void validateUniqueFields(SaveUserRequest request) {
+        String email = request.getEmail();
+        if (userRepository.existsByEmail(email)) {
+            //throw FileSharingExceptions.duplicateEmail(email);
+        }
+    }
+
+    private CardChekingUser save(SaveUserRequest request, Map<KnownAuthority, CardCheckingUserAuthority> authorities) {
+        var user = new CardChekingUser();
+        user.getAuthorities().putAll(authorities);
+        user.setEmail(request.getEmail());
+        user.setFirstName(request.getFirstName());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setCreatedAt(Instant.now());
+        userRepository.save(user);
+        return user;
+    }
+
+    private Map<KnownAuthority, CardCheckingUserAuthority> getRegularUserAuthorities() {
+        CardCheckingUserAuthority authority = authorityRepository
+                .findByValue(KnownAuthority.ROLE_USER)
+                .orElseThrow(() -> CardCheckExceptions.authorityNotFound(KnownAuthority.ROLE_USER.name()));
+
+        Map<KnownAuthority, CardCheckingUserAuthority> authorities = new EnumMap<>(KnownAuthority.class);
+        authorities.put(KnownAuthority.ROLE_USER, authority);
+        return authorities;
+    }
+
+
+
 }
