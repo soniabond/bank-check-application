@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -84,6 +85,11 @@ public class UserService implements UserDetailsService {
         Map<KnownAuthority, CardCheckingUserAuthority> authorities = new EnumMap<>(KnownAuthority.class);
         authorities.put(KnownAuthority.ROLE_USER, authority);
         return authorities;
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<UserResponse> findByEmail(String email){
+        return userRepository.findByEmail(email).map(UserResponse::fromUser);
     }
 
 

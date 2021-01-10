@@ -1,15 +1,19 @@
-package com.sonia.java.bankcheckapplication.config.security;
+package com.sonia.java.bankcheckapplication.config.security.filters;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sonia.java.bankcheckapplication.model.user.KnownAuthority;
+import com.sonia.java.bankcheckapplication.config.security.properties.CardCheckingJWTProperties;
+import com.sonia.java.bankcheckapplication.config.security.SecurityConstants;
 import com.sonia.java.bankcheckapplication.model.user.UserLoginRequest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -18,7 +22,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Set;
+import java.util.Date;
 
 import static com.auth0.jwt.algorithms.Algorithm.HMAC512;
 
@@ -46,15 +50,13 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             UserLoginRequest credentials = objectMapper
                     .readValue(req.getInputStream(), UserLoginRequest.class);
 
+            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                    credentials.getEmail(),
+                    credentials.getPassword());
 
 
-            return getAuthenticationManager().authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            credentials.getEmail(),
-                            credentials.getPassword(),
-                            Set.of(new SimpleGrantedAuthority(KnownAuthority.ROLE_USER.name()))
-                            )
-            );
+
+            return getAuthenticationManager().authenticate(authToken);
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"Error process credentials", e);
         }
@@ -65,8 +67,18 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                                             HttpServletResponse res,
                                             FilterChain chain,
                                             Authentication auth) throws IOException, ServletException {
-        SecurityContextHolder.getContext().setAuthentication(auth);
-        chain.doFilter(req, res);
+        long now = System.currentTimeMillis();
+        var principal = (UserDetails) auth.getPrincipal();
+        String token = JWT.create()
+                .withSubject(principal.getUsername())
+                .withIssuedAt(new Date(now))
+                .withExpiresAt(new Date(now + jwtProperties.getExpireIn()))
+                .withArrayClaim(SecurityConstants.AUTHORITIES_CLAIM, principal.getAuthorities().stream()
+                        .map(GrantedAuthority::getAuthority)
+                        .toArray(String[]::new))
+                .sign(Algorithm.HMAC512(jwtProperties.getSecret().getBytes()));
+
+        res.addHeader(HttpHeaders.AUTHORIZATION, SecurityConstants.AUTH_TOKEN_PREFIX + token);
          }
 
 }
