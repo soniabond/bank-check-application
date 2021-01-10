@@ -3,6 +3,9 @@ package com.sonia.java.bankcheckapplication.config.security;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.sonia.java.bankcheckapplication.model.user.KnownAuthority;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -18,16 +21,20 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 
-    private final CardCheckingJWTProperties cardCheckingJWTProperties;
+    private final Algorithm algorithm;
 
-    public JWTAuthorizationFilter(AuthenticationManager authenticationManager, CardCheckingJWTProperties cardCheckingJWTProperties) {
+    private static final Logger log = LoggerFactory.getLogger(JWTAuthorizationFilter.class);
+
+
+    public JWTAuthorizationFilter(AuthenticationManager authenticationManager, CardCheckingJWTProperties jwtProperties) {
         super(authenticationManager);
-        this.cardCheckingJWTProperties = cardCheckingJWTProperties;
+        algorithm = Algorithm.HMAC512(jwtProperties.getSecret().getBytes());
     }
 
     @Override
@@ -36,6 +43,15 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
                                     FilterChain chain) throws IOException, ServletException {
 
 
+        var securityContext = SecurityContextHolder.getContext();
+
+        var authentication = securityContext.getAuthentication();
+        // if authenticated by other means, such as JWTAuthenticationFilter
+        if (authentication != null && authentication.isAuthenticated()) {
+            chain.doFilter(req, res);
+            return;
+        }
+
         String header = req.getHeader(HttpHeaders.AUTHORIZATION);
 
         if (header == null || !header.startsWith(SecurityConstants.AUTH_TOKEN_PREFIX)) {
@@ -43,30 +59,33 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
             return;
         }
 
-        UsernamePasswordAuthenticationToken authentication = getAuthentication(req);
+        String encodedJwt = header.substring(SecurityConstants.AUTH_TOKEN_PREFIX.length());
+        authentication = getAuthentication(encodedJwt);
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        securityContext.setAuthentication(authentication);
         chain.doFilter(req, res);
+
     }
 
-    private UsernamePasswordAuthenticationToken getAuthentication(HttpServletRequest request) {
-        String token = request.getHeader(HttpHeaders.AUTHORIZATION);
-        if (token == null) {
+    private UsernamePasswordAuthenticationToken getAuthentication(String encodedJwt) {
+        DecodedJWT decodedJWT;
+        try {
+            decodedJWT = JWT.require(algorithm)
+                    .build()
+                    .verify(encodedJwt);
+        } catch (Exception e) {
+            log.debug("Invalid JWT received", e);
             return null;
         }
-            // parse the token.
-        DecodedJWT jwt = JWT.require(Algorithm.HMAC512(cardCheckingJWTProperties.getSecret().getBytes()))
-                .withIssuer(cardCheckingJWTProperties.getIssuer())
-                .withAudience(SecurityConstants.AUDIENCE_CLAIM_VALUE)
-                .build()
-                .verify(token.substring(SecurityConstants.AUTH_TOKEN_PREFIX.length()));
 
-        String username = jwt.getSubject();
-        Set<GrantedAuthority> authorities = jwt.getClaim(SecurityConstants.AUTHORITIES_CLAIM)
-                .asList(String.class)
-                .stream()
-                .map(SimpleGrantedAuthority::new)
-                .collect(Collectors.toSet());
-        return new UsernamePasswordAuthenticationToken(username, null, authorities);
+        String email = decodedJWT.getSubject();
+
+        Set<KnownAuthority> authorities = decodedJWT.getClaim(SecurityConstants.AUTHORITIES_CLAIM)
+                .asList(String.class).stream()
+                .map(KnownAuthority::valueOf)
+                .collect(Collectors.toCollection(() -> EnumSet.noneOf(KnownAuthority.class)));
+
+        return new UsernamePasswordAuthenticationToken(email, null, authorities);
+
     }
 }

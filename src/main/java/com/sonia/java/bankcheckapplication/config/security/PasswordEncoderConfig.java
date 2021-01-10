@@ -10,11 +10,13 @@ import java.security.SecureRandom;
 @Configuration
 public class PasswordEncoderConfig {
 
+    private static final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10, new SecureRandom());
+
 
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(20, new SecureRandom());
+        return passwordEncoder;
     }
 
 }
