@@ -41,6 +41,7 @@ public class UserService implements UserDetailsService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    @Transactional
     public UserResponse create(SaveUserRequest request){
         validateUniqueFields(request);
         return UserResponse.fromUser(save(request, getRegularUserAuthorities()));
@@ -53,9 +54,7 @@ public class UserService implements UserDetailsService {
 
         CardChekingUser user = userRepository.findByEmail(email).orElseThrow(() ->
                 new UsernameNotFoundException("User with mail " + email+" not found"));
-        Set<GrantedAuthority> grantedAuthorities = user.getAuthorities().keySet().stream()
-                .map(authority -> new SimpleGrantedAuthority(authority.getAuthority()))
-                .collect(Collectors.toSet());
+        Set<KnownAuthority> grantedAuthorities = user.getAuthorities().keySet();
         return new User(user.getEmail(), user.getPassword(), grantedAuthorities);
     }
 
@@ -89,8 +88,11 @@ public class UserService implements UserDetailsService {
 
     @Transactional(readOnly = true)
     public Optional<UserResponse> findByEmail(String email){
+        System.out.println("");
         return userRepository.findByEmail(email).map(UserResponse::fromUser);
     }
+
+
 
 
 

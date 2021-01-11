@@ -22,13 +22,12 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.Date;
 
 import static com.auth0.jwt.algorithms.Algorithm.HMAC512;
 
 public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
-
-    public static final String AUTHORILIES_CLAIM = "authorities";
 
     private final CardCheckingJWTProperties jwtProperties;
 
@@ -46,20 +45,17 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     @Override
     public Authentication attemptAuthentication(HttpServletRequest req,
                                                 HttpServletResponse res) throws AuthenticationException {
+        UserLoginRequest credentials;
         try {
-            UserLoginRequest credentials = objectMapper
-                    .readValue(req.getInputStream(), UserLoginRequest.class);
-
-            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                    credentials.getEmail(),
-                    credentials.getPassword());
-
-
-
-            return getAuthenticationManager().authenticate(authToken);
+            credentials = objectMapper.readValue(req.getInputStream(), UserLoginRequest.class);
         } catch (IOException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"Error process credentials", e);
+            throw new UncheckedIOException(e);
         }
+        var authToken = new UsernamePasswordAuthenticationToken(
+                credentials.getEmail(),
+                credentials.getPassword()
+        );
+        return getAuthenticationManager().authenticate(authToken);
     }
 
     @Override

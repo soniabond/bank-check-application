@@ -9,9 +9,11 @@ card-checking:
   security:
     jwt:
       secret: GnBGcKJvQJ93KCVVxXxkYL7RNWqYACCaMT9pNXmx7R949KKnrFsad3GVD3VkK3Qw
-      key-id: card-check/dev
-      issuer: card-check
       expireIn: 600000
+
+
+springdoc:
+  show-login-endpoint: true
 
 spring:
   datasource:
@@ -21,6 +23,4 @@ spring:
     password: 3523
   jpa:
     open-in-view: false
-
-springdoc:
-  show-login-endpoint: true
+    show-sql: true

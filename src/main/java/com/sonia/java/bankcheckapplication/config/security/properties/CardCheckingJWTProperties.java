@@ -3,15 +3,17 @@ package com.sonia.java.bankcheckapplication.config.security.properties;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "card-checking.security.jwt")
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
+
 public class CardCheckingJWTProperties {
 
-    private String keyId;
-
+    @NotBlank
     private String secret;
 
-    private String issuer;
-
+    @Min(value = 60_000)
+    @Max(value = 3_600_000)
     private long expireIn;
 
     public long getExpireIn() {
@@ -22,14 +24,6 @@ public class CardCheckingJWTProperties {
         this.expireIn = expireIn;
     }
 
-    public String getKeyId() {
-        return keyId;
-    }
-
-    public void setKeyId(String keyId) {
-        this.keyId = keyId;
-    }
-
     public String getSecret() {
         return secret;
     }
@@ -38,12 +32,5 @@ public class CardCheckingJWTProperties {
         this.secret = secret;
     }
 
-    public String getIssuer() {
-        return issuer;
-    }
-
-    public void setIssuer(String issuer) {
-        this.issuer = issuer;
-    }
 
 }

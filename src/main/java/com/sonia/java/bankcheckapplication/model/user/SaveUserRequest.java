@@ -18,6 +18,15 @@ public class SaveUserRequest {
     @NotBlank
     private String firstName;
 
+    public SaveUserRequest() {
+    }
+
+    public SaveUserRequest(String email, String password, String nickname) {
+        this.email = email;
+        this.password = password;
+        this.firstName = nickname;
+    }
+
 
     public String getEmail() {
         return email;

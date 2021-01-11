@@ -2,6 +2,7 @@ package com.sonia.java.bankcheckapplication.config.security.filters;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.sonia.java.bankcheckapplication.config.security.properties.CardCheckingJWTProperties;
 import com.sonia.java.bankcheckapplication.config.security.SecurityConstants;
@@ -29,9 +30,12 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 
     private static final Logger log = LoggerFactory.getLogger(JWTAuthorizationFilter.class);
 
+    private final CardCheckingJWTProperties jwtProperties;
+
 
     public JWTAuthorizationFilter(AuthenticationManager authenticationManager, CardCheckingJWTProperties jwtProperties) {
         super(authenticationManager);
+        this.jwtProperties = jwtProperties;
         algorithm = Algorithm.HMAC512(jwtProperties.getSecret().getBytes());
     }
 
@@ -41,15 +45,6 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
                                     FilterChain chain) throws IOException, ServletException {
 
 
-        var securityContext = SecurityContextHolder.getContext();
-
-        var authentication = securityContext.getAuthentication();
-        // if authenticated by other means, such as JWTAuthenticationFilter
-        if (authentication != null && authentication.isAuthenticated()) {
-            chain.doFilter(req, res);
-            return;
-        }
-
         String header = req.getHeader(HttpHeaders.AUTHORIZATION);
 
         if (header == null || !header.startsWith(SecurityConstants.AUTH_TOKEN_PREFIX)) {
@@ -57,21 +52,26 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
             return;
         }
 
-        String encodedJwt = header.substring(SecurityConstants.AUTH_TOKEN_PREFIX.length());
-        authentication = getAuthentication(encodedJwt);
+        var authentication = getAuthentication(req);
 
-        securityContext.setAuthentication(authentication);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
         chain.doFilter(req, res);
 
     }
 
-    private UsernamePasswordAuthenticationToken getAuthentication(String encodedJwt) {
+    private UsernamePasswordAuthenticationToken getAuthentication(HttpServletRequest request) {
+        String token = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if (token == null) return null;
+
+        String encodedJwt = token.substring(SecurityConstants.AUTH_TOKEN_PREFIX.length());
+
+        // parse the token.
         DecodedJWT decodedJWT;
         try {
-            decodedJWT = JWT.require(algorithm)
+            decodedJWT = JWT.require(Algorithm.HMAC512(jwtProperties.getSecret().getBytes()))
                     .build()
                     .verify(encodedJwt);
-        } catch (Exception e) {
+        } catch (JWTVerificationException e) {
             log.debug("Invalid JWT received", e);
             return null;
         }
@@ -84,6 +84,5 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
                 .collect(Collectors.toCollection(() -> EnumSet.noneOf(KnownAuthority.class)));
 
         return new UsernamePasswordAuthenticationToken(email, null, authorities);
-
     }
 }
