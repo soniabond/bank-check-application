@@ -5,6 +5,7 @@ import com.sonia.java.bankcheckapplication.exceptions.CardCheckExceptions;
 import com.sonia.java.bankcheckapplication.model.user.SaveUserRequest;
 import com.sonia.java.bankcheckapplication.model.user.UserResponse;
 import com.sonia.java.bankcheckapplication.service.UserService;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,6 +28,7 @@ public class UserController {
 
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public UserResponse register(@RequestBody @Valid SaveUserRequest request){
        return userService.create(request);
     }

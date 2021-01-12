@@ -4,12 +4,11 @@ package com.sonia.java.bankcheckapplication.config.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sonia.java.bankcheckapplication.config.security.filters.JWTAuthenticationFilter;
 import com.sonia.java.bankcheckapplication.config.security.filters.JWTAuthorizationFilter;
-import com.sonia.java.bankcheckapplication.config.security.properties.CardCheckingJWTProperties;
 import com.sonia.java.bankcheckapplication.config.security.properties.CardCheckingSecurityProperties;
+import com.sonia.java.bankcheckapplication.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -32,7 +31,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private static final Logger log = LoggerFactory.getLogger(SecurityConfig.class);
 
-    private final UserDetailsService userDetailsService;
+    private final UserService userService;
 
     private final PasswordEncoder passwordEncoder;
 
@@ -41,11 +40,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final ObjectMapper objectMapper;
 
 
-    public SecurityConfig(@Qualifier("userService") UserDetailsService userDetailsService,
+    public SecurityConfig(UserService userService,
                           PasswordEncoder passwordEncoder,
                           CardCheckingSecurityProperties securityProperties,
                           ObjectMapper objectMapper) {
-        this.userDetailsService = userDetailsService;
+        this.userService = userService;
         this.passwordEncoder = passwordEncoder;
         this.securityProperties = securityProperties;
         this.objectMapper = objectMapper;
@@ -54,7 +53,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 //just a comment
     @Override
     public void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder);
+        auth.userDetailsService(userService).passwordEncoder(passwordEncoder);
     }
 
     @Override
@@ -66,7 +65,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 // allow user registration
                 .antMatchers(HttpMethod.POST, "/users").permitAll()
-                .antMatchers(HttpMethod.POST, "/login").permitAll()
                 // by default, require authentication
                 .anyRequest().authenticated()
                 .and()

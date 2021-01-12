@@ -3,6 +3,8 @@ package com.sonia.java.bankcheckapplication.model.user;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.time.Instant;
+import java.time.ZoneOffset;
+import java.util.EnumSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -17,21 +19,16 @@ public class UserResponse {
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Instant createdAt;
 
-    private Set<String> authorities;
+    private Set<KnownAuthority> authorities;
 
     public static UserResponse fromUser(CardChekingUser user){
-        System.out.println("point 3");
-        UserResponse userResponse = new UserResponse();
-        userResponse.id = user.getId();
-        userResponse.firstName = user.getFirstName();
-        userResponse.createdAt = user.getCreatedAt();
-        userResponse.authorities = user.getAuthorities().keySet()
-                .stream()
-                .map(cardCheckingUserAuthority -> cardCheckingUserAuthority.getAuthority())
-                .collect(Collectors.toSet());
-        userResponse.email = user.getEmail();
-        System.out.println("point 4");
-        return userResponse;
+        var response = new UserResponse();
+        response.id = user.getId();
+        response.email = user.getEmail();
+        response.firstName = user.getFirstName();
+        response.createdAt = user.getCreatedAt();
+        response.authorities = EnumSet.copyOf(user.getAuthorities().keySet());
+        return response;
     }
 
     public long getId() {
@@ -66,11 +63,11 @@ public class UserResponse {
         this.createdAt = createdAt;
     }
 
-    public Set<String> getAuthorities() {
+    public Set<KnownAuthority> getAuthorities() {
         return authorities;
     }
 
-    public void setAuthorities(Set<String> authorities) {
+    public void setAuthorities(Set<KnownAuthority> authorities) {
         this.authorities = authorities;
     }
 }

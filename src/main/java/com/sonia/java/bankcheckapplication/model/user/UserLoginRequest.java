@@ -1,7 +1,10 @@
 package com.sonia.java.bankcheckapplication.model.user;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+
 public class UserLoginRequest {
 
+    @JsonAlias({"email"})
     private String email;
 
     private String password;

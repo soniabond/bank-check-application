@@ -38,7 +38,7 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         this.jwtProperties = jwtProperties;
         this.objectMapper = objectMapper;
         setAuthenticationManager(authenticationManager);
-        setUsernameParameter("login");
+        setUsernameParameter("email");
     }
 
 

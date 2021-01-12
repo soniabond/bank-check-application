@@ -26,8 +26,6 @@ import java.util.stream.Collectors;
 
 public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 
-    private final Algorithm algorithm;
-
     private static final Logger log = LoggerFactory.getLogger(JWTAuthorizationFilter.class);
 
     private final CardCheckingJWTProperties jwtProperties;
@@ -36,7 +34,6 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
     public JWTAuthorizationFilter(AuthenticationManager authenticationManager, CardCheckingJWTProperties jwtProperties) {
         super(authenticationManager);
         this.jwtProperties = jwtProperties;
-        algorithm = Algorithm.HMAC512(jwtProperties.getSecret().getBytes());
     }
 
     @Override
