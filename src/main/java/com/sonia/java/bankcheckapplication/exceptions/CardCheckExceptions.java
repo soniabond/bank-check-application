@@ -15,4 +15,8 @@ public final class CardCheckExceptions {
     public static ResponseStatusException userNotFound(String value){
         return new ResponseStatusException(HttpStatus.NOT_FOUND, "User with email  "+value+" not found");
     }
+
+    public static ResponseStatusException duplicateEmail(String email) {
+        return new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email " + email + " already taken");
+    }
 }

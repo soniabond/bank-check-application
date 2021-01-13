@@ -8,7 +8,6 @@ import com.sonia.java.bankcheckapplication.config.security.properties.CardChecki
 import com.sonia.java.bankcheckapplication.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -18,7 +17,6 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.web.cors.CorsConfiguration;
@@ -50,7 +48,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         this.objectMapper = objectMapper;
     }
 
-//just a comment
     @Override
     public void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(userService).passwordEncoder(passwordEncoder);
@@ -64,14 +61,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 // open swagger-ui
                 .antMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 // allow user registration
-                .antMatchers(HttpMethod.POST, "/users").permitAll()
+                .antMatchers(HttpMethod.POST, "/api/v1/users").permitAll()
                 // by default, require authentication
                 .anyRequest().authenticated()
                 .and()
                 // login filter
-                .addFilter(new JWTAuthenticationFilter(authenticationManager(), securityProperties.getJwt(), objectMapper))
+                .addFilter(jwtAuthenticationFilter())
                 // jwt-verification filter
-                .addFilter(new JWTAuthorizationFilter(authenticationManager(), securityProperties.getJwt()))
+                .addFilter(jwtAuthorizationFilter())
                 // for unauthorized requests return 401
                 .exceptionHandling().authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
                 .and()
@@ -89,5 +86,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         source.registerCorsConfiguration("/**", new CorsConfiguration().applyPermitDefaultValues());
         return source;
     }
+
+    private JWTAuthenticationFilter jwtAuthenticationFilter() throws Exception {
+        var filter = new JWTAuthenticationFilter(authenticationManager(), objectMapper);
+        filter.setFilterProcessesUrl("/api/v1/token");
+        return filter;
+    }
+
+    private JWTAuthorizationFilter jwtAuthorizationFilter() throws Exception {
+        return new JWTAuthorizationFilter(authenticationManager(), securityProperties.getJwt());
+    }
+
 
 }

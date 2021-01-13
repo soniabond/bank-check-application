@@ -1,4 +1,4 @@
-package com.sonia.java.bankcheckapplication.model.user;
+package com.sonia.java.bankcheckapplication.model.user.auth;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 

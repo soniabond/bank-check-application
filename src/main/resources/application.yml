@@ -11,10 +11,6 @@ card-checking:
       secret: GnBGcKJvQJ93KCVVxXxkYL7RNWqYACCaMT9pNXmx7R949KKnrFsad3GVD3VkK3Qw
       expireIn: 600000
 
-
-springdoc:
-  show-login-endpoint: true
-
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/bankapp_db

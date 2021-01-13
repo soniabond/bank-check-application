@@ -5,8 +5,8 @@ import com.sonia.java.bankcheckapplication.exceptions.CardCheckExceptions;
 import com.sonia.java.bankcheckapplication.model.user.*;
 import com.sonia.java.bankcheckapplication.repository.UserAuthorityRepository;
 import com.sonia.java.bankcheckapplication.repository.UserRepository;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -16,12 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.EnumMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
-
+import java.util.*;
 
 
 @Service
@@ -40,9 +35,14 @@ public class UserService implements UserDetailsService {
     }
 
     @Transactional
-    public UserResponse create(SaveUserRequest request){
+    public UserResponse create(SaveUserRequest request) {
         validateUniqueFields(request);
         return UserResponse.fromUser(save(request, getRegularUserAuthorities()));
+    }
+
+    @Transactional(readOnly = true)
+    public Page<UserResponse> list(Pageable pageable) {
+        return userRepository.findAll(pageable).map(UserResponse::fromUser);
     }
 
 
@@ -51,15 +51,15 @@ public class UserService implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 
         CardChekingUser user = userRepository.findByEmail(email).orElseThrow(() ->
-                new UsernameNotFoundException("User with mail " + email+" not found"));
-        Set<KnownAuthority> grantedAuthorities = user.getAuthorities().keySet();
+                new UsernameNotFoundException("User with mail " + email + " not found"));
+        Set<KnownAuthority> grantedAuthorities = EnumSet.copyOf(user.getAuthorities().keySet());
         return new User(user.getEmail(), user.getPassword(), grantedAuthorities);
     }
 
     private void validateUniqueFields(SaveUserRequest request) {
         String email = request.getEmail();
         if (userRepository.existsByEmail(email)) {
-            //throw FileSharingExceptions.duplicateEmail(email);
+            throw CardCheckExceptions.duplicateEmail(email);
         }
     }
 
@@ -85,13 +85,11 @@ public class UserService implements UserDetailsService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<UserResponse> findByEmail(String email){
-        System.out.println("");
+    public Optional<UserResponse> findByEmail(String email) {
         return userRepository.findByEmail(email).map(UserResponse::fromUser);
     }
-
-
-
-
-
 }
+
+
+
+
