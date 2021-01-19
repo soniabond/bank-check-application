@@ -19,4 +19,9 @@ public final class CardCheckExceptions {
     public static ResponseStatusException duplicateEmail(String email) {
         return new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email " + email + " already taken");
     }
+
+    public static ResponseStatusException wrongPassword() {
+        return new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password is incorrect");
+    }
+
 }

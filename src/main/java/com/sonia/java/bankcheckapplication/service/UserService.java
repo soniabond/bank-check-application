@@ -88,6 +88,29 @@ public class UserService implements UserDetailsService {
     public Optional<UserResponse> findByEmail(String email) {
         return userRepository.findByEmail(email).map(UserResponse::fromUser);
     }
+
+    @Transactional
+    public UserResponse changePasswordByEmail(String email, ChangeUserPasswordRequest request) {
+        CardChekingUser user = getUser(email);
+        changePassword(user, request.getOldPassword(), request.getNewPassword());
+        return UserResponse.fromUser(user);
+    }
+
+    private CardChekingUser getUser(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> CardCheckExceptions.userNotFound(email));
+    }
+
+    private void changePassword(CardChekingUser user, String oldPassword, String newPassword) {
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            throw CardCheckExceptions.wrongPassword();
+        }
+        if (newPassword.equals(oldPassword)) return;
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
+
+
 }
 
 

@@ -2,6 +2,7 @@ package com.sonia.java.bankcheckapplication.controller;
 
 
 import com.sonia.java.bankcheckapplication.exceptions.CardCheckExceptions;
+import com.sonia.java.bankcheckapplication.model.user.ChangeUserPasswordRequest;
 import com.sonia.java.bankcheckapplication.model.user.SaveUserRequest;
 import com.sonia.java.bankcheckapplication.model.user.UserResponse;
 import com.sonia.java.bankcheckapplication.service.UserService;
@@ -34,6 +35,12 @@ public class UserController {
     @PageableAsQueryParam
     public Page<UserResponse> listUsers(@Parameter(hidden = true) Pageable pageable) {
         return userService.list(pageable);
+    }
+
+    @PatchMapping("/me/password")
+    public UserResponse changeCurrentUserPassword(@AuthenticationPrincipal String email,
+                                                  @RequestBody @Valid ChangeUserPasswordRequest request) {
+        return userService.changePasswordByEmail(email, request);
     }
 
 
