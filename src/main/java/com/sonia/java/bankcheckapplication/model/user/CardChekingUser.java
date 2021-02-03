@@ -1,12 +1,12 @@
 package com.sonia.java.bankcheckapplication.model.user;
 
+import com.sonia.java.bankcheckapplication.model.bank.category.DischargeEntity;
+import com.sonia.java.bankcheckapplication.model.bank.merchant.BankMerchantEntity;
 import org.hibernate.annotations.NaturalId;
 
 import javax.persistence.*;
 import java.time.Instant;
-import java.util.EnumMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Table(name = "users")
@@ -35,6 +35,18 @@ public class CardChekingUser {
     @MapKeyEnumerated(EnumType.STRING)
     @MapKey(name = "value")
     private Map<KnownAuthority, CardCheckingUserAuthority> authorities = new EnumMap<>(KnownAuthority.class);
+
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
+    private Set<BankMerchantEntity>  merchants = new HashSet<>();
+
+    public Set<BankMerchantEntity> getMerchants() {
+        return merchants;
+    }
+
+    public void setMerchants(Set<BankMerchantEntity> merchants) {
+        this.merchants = merchants;
+    }
 
     public String getPassword() {
         return password;
@@ -82,5 +94,18 @@ public class CardChekingUser {
 
     public void setAuthorities(Map<KnownAuthority, CardCheckingUserAuthority> authorities) {
         this.authorities = authorities;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CardChekingUser user = (CardChekingUser) o;
+        return email.equals(user.email);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(email);
     }
 }

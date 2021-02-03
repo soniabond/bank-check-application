@@ -1,10 +1,21 @@
 package com.sonia.java.bankcheckapplication.service;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sonia.java.bankcheckapplication.exceptions.CardCheckExceptions;
+import com.sonia.java.bankcheckapplication.model.bank.category.Category;
+import com.sonia.java.bankcheckapplication.model.bank.category.DischargeEntity;
+import com.sonia.java.bankcheckapplication.model.bank.discharge.BankDischarge;
+import com.sonia.java.bankcheckapplication.model.bank.factory.BankFactory;
+import com.sonia.java.bankcheckapplication.model.bank.merchant.BankMerchantEntity;
+import com.sonia.java.bankcheckapplication.model.bank.req.discharge.DischargeRequestData;
+import com.sonia.java.bankcheckapplication.model.bank.resp.CategoryDischargeResponse;
 import com.sonia.java.bankcheckapplication.model.user.*;
+import com.sonia.java.bankcheckapplication.repository.CategoryRepository;
+import com.sonia.java.bankcheckapplication.repository.MerchantRepository;
 import com.sonia.java.bankcheckapplication.repository.UserAuthorityRepository;
 import com.sonia.java.bankcheckapplication.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.User;
@@ -15,6 +26,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.time.Instant;
 import java.util.*;
 
@@ -26,12 +41,22 @@ public class UserService implements UserDetailsService {
 
     private final UserAuthorityRepository authorityRepository;
 
+    private final MerchantRepository merchantRepository;
+
     private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, UserAuthorityRepository authorityRepository, PasswordEncoder passwordEncoder) {
+    private final CategoryRepository categoryRepository;
+
+    @Autowired
+    public UserService(UserRepository userRepository,
+                       UserAuthorityRepository authorityRepository,
+                       MerchantRepository merchantRepository,
+                       PasswordEncoder passwordEncoder, CategoryRepository categoryRepository) {
         this.userRepository = userRepository;
         this.authorityRepository = authorityRepository;
+        this.merchantRepository = merchantRepository;
         this.passwordEncoder = passwordEncoder;
+        this.categoryRepository = categoryRepository;
     }
 
     @Transactional
@@ -108,6 +133,106 @@ public class UserService implements UserDetailsService {
         if (newPassword.equals(oldPassword)) return;
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
+    }
+
+    @Transactional
+    public CardChekingUser addUserMerchant(String email, @NotNull BankMerchantEntity merchantEntity){
+        CardChekingUser user = userRepository.findByEmail(email).orElseThrow(() -> CardCheckExceptions.userNotFound(email));
+        user.getMerchants().add(merchantEntity);
+        merchantEntity.setUser(user);
+        merchantRepository.save(merchantEntity);
+        user = userRepository.save(user);
+        return user;
+    }
+
+    private List<CategoryDischargeResponse> splitIntoCategories(List<BankDischarge> discharges){
+
+        List<Category> categorySet = categoryRepository.findAll();
+
+        Map<Category, Float> categorySpent = new HashMap<>();
+
+        for (Category category1: categorySet){
+            categorySpent.put(category1, (float)0);
+            System.out.println(category1);
+            System.out.println(categorySpent.get(category1));
+        }
+
+
+        Map<Category, List<BankDischarge>> categoryDischarge = new HashMap<>();
+        for(Category category: categorySet){
+            categoryDischarge.put(category, new ArrayList<>());
+        }
+
+        Category tempCategory = new Category();
+        boolean flag = false;
+
+        for (BankDischarge discharge: discharges){
+
+            for(Category category: categorySet){
+                for(DischargeEntity categoryItem: category.getDischarges()) {
+                    if (discharge.getDescription() != null && discharge.getDescription().contains(categoryItem.getName())) {
+                        tempCategory.setName(category.getName());
+                        categoryDischarge.get(tempCategory).add(discharge);
+                        categorySpent.put(tempCategory, categorySpent.get(tempCategory) + discharge.getCardamount());
+                        flag = true;
+                        break;
+                    }
+                    if (discharge.getTerminal() != null && discharge.getTerminal().contains(categoryItem.getName())) {
+                        tempCategory.setName(category.getName());
+                        categoryDischarge.get(tempCategory).add(discharge);
+                        categorySpent.put(tempCategory, categorySpent.get(tempCategory) + discharge.getCardamount());
+                        flag = true;
+                        break;
+                    }
+                }
+                if (flag) {
+                    flag = false;
+                    break;
+                }
+            }
+
+        }
+
+        List<CategoryDischargeResponse> responses = new ArrayList<>();
+
+        for (Category key : categoryDischarge.keySet()){
+            responses.add(new CategoryDischargeResponse(
+                    key,
+                    categoryDischarge.get(key),
+                    categorySpent.get(key))
+            );
+        }
+        //responses.forEach(System.out::println);
+
+        return responses;
+
+
+    }
+
+
+    public void generateCategorySplitAnswer(@NotBlank String email, int month, int year) throws IOException {
+        CardChekingUser user = getUser(email);
+        Set<BankMerchantEntity> bankMerchants = user.getMerchants();
+
+        List<BankDischarge> discharges = new ArrayList<>();
+
+
+        for (BankMerchantEntity bankMerchant: bankMerchants){
+            BankFactory bankFactory= bankMerchant.getBank().getBankFactory();
+            bankFactory.getRequestData().setPeriod(month, year).nestMerchant(bankMerchant);
+            DischargeRequestData requestData = bankFactory.getRequestData();
+            String data = bankFactory.getDataReceiver().receiveDischarge(requestData);
+            discharges.addAll(bankFactory.getParser().parseDischarge(data));
+        }
+
+        List<CategoryDischargeResponse> responses = this.splitIntoCategories(discharges);
+        ObjectMapper mapper = new ObjectMapper();
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        mapper.writeValue(out, responses);
+        String json = out.toString();
+
+
+
     }
 
 

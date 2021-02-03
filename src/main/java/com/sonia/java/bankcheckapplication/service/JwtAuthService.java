@@ -7,6 +7,7 @@ import com.sonia.java.bankcheckapplication.config.security.SecurityConstants;
 import com.sonia.java.bankcheckapplication.config.security.properties.CardCheckingJWTProperties;
 import com.sonia.java.bankcheckapplication.config.security.properties.CardCheckingSecurityProperties;
 import com.sonia.java.bankcheckapplication.model.user.auth.UserLoginResponse;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ public class JwtAuthService {
 
     private final CardCheckingJWTProperties jwtProperties;
 
+    @Autowired
     public JwtAuthService(CardCheckingSecurityProperties jwtProperties) {
 
         this.jwtProperties = jwtProperties.getJwt();
