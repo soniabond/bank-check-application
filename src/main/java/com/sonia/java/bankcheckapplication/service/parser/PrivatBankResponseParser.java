@@ -1,5 +1,6 @@
 package com.sonia.java.bankcheckapplication.service.parser;
 
+import com.sonia.java.bankcheckapplication.exceptions.BankApiExceptions;
 import com.sonia.java.bankcheckapplication.model.bank.discharge.BankDischarge;
 import com.sonia.java.bankcheckapplication.model.bank.discharge.PrivatBankDischarge;
 import org.springframework.context.annotation.Scope;
@@ -18,6 +19,7 @@ public class PrivatBankResponseParser implements ResponseParser {
 
     @Override
     public List<BankDischarge> parseDischarge(String xml) {
+        validateResponse(xml);
         List<String> xmls = new ArrayList<>(Arrays.asList(xml.split("\n")));
 
         xmls.remove(0);
@@ -32,6 +34,7 @@ public class PrivatBankResponseParser implements ResponseParser {
 
     @Override
     public float parseBalance(String parsableResponse) {
+        validateResponse(parsableResponse);
         String balance = parsableResponse.split("<balance>")[1].split("<")[0];
         return Float.parseFloat(balance);
     }
@@ -62,6 +65,20 @@ public class PrivatBankResponseParser implements ResponseParser {
         }
 
         return privatBankDischarges;
+    }
+
+    private void validateResponse(String response){
+        List<String> errorMarkers = new ArrayList<>();
+        errorMarkers.add("invalid merchant id");
+        errorMarkers.add("this card is not in merchants card");
+        for (String errorMarker: errorMarkers){
+            if (response.contains(errorMarker)){
+                throw BankApiExceptions.invalidPrivatData(errorMarker);
+            }
+        }
+        if (response.contains("error message") || response.contains("error")){
+            throw BankApiExceptions.invalidPrivatData("invalid merchant data");
+        }
     }
 
 }

@@ -55,7 +55,7 @@ public class UserController {
 
     @GetMapping("/me/categories")
     public List<CategoryDischargeResponse> getCategoryAnalytics(@AuthenticationPrincipal String email) throws IOException {
-        return userService.generateCategorySplitAnswer(email, 1, 2021);
+        return userService.generateCategorySplitAnswer(email, 3, 2021);
 
     }
 

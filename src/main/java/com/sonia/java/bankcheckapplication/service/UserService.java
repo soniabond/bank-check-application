@@ -147,6 +147,7 @@ public class UserService implements UserDetailsService {
         System.out.println(merchantRequest);
         PrivatBankMerchantEntity merchantEntity =
                 PrivatBankMerchantEntity.fromPrivatBankMerchantRequest(merchantRequest);
+        MerchantDataValidation.validate(merchantEntity);
         return addUserMerchant(email, merchantEntity);
     }
 
@@ -154,7 +155,7 @@ public class UserService implements UserDetailsService {
         System.out.println(merchantRequest);
         MonoBankMerchantEntity merchantEntity =
                 MonoBankMerchantEntity.fromMonoBankMerchantRequest(merchantRequest);
-        MerchantDataValidation.validateMonoData(merchantEntity);
+        MerchantDataValidation.validate(merchantEntity);
 
         return addUserMerchant(email, merchantEntity);
     }

@@ -24,8 +24,7 @@ public class MonoBankResponseParser implements ResponseParser {
 
 
     @Override
-    public List<BankDischarge> parseDischarge(String json) throws ResponseStatusException{
-        validateData(json);
+    public List<BankDischarge> parseDischarge(String json) throws ResponseStatusException{ ;
         json = json.split("\\[")[1];
         json = '['+json;
         ObjectMapper mapper = new ObjectMapper();
@@ -48,7 +47,7 @@ public class MonoBankResponseParser implements ResponseParser {
 
     @Override
     public float parseBalance(String parsableJson) throws ResponseStatusException {
-        validateData(parsableJson);
+
         String json = parsableJson.split("Date")[0];
         json = json.substring(5, json.length()-2);
         System.out.println(json);
@@ -66,11 +65,4 @@ public class MonoBankResponseParser implements ResponseParser {
         return 0;
     }
 
-
-    public void validateData(String parsableJson) throws ResponseStatusException{
-        String errorMarker = "403 Forbidden";
-        if (parsableJson.contains(errorMarker)){
-            throw BankApiExceptions.invalidXTokenException();
-        }
-    }
 }
