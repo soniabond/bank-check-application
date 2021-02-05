@@ -1,4 +1,4 @@
-package com.sonia.java.bankcheckapplication.model.user;
+package com.sonia.java.bankcheckapplication.model.user.req;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;

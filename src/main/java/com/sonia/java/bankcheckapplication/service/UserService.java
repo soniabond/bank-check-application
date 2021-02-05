@@ -8,13 +8,21 @@ import com.sonia.java.bankcheckapplication.model.bank.category.DischargeEntity;
 import com.sonia.java.bankcheckapplication.model.bank.discharge.BankDischarge;
 import com.sonia.java.bankcheckapplication.model.bank.factory.BankFactory;
 import com.sonia.java.bankcheckapplication.model.bank.merchant.BankMerchantEntity;
+import com.sonia.java.bankcheckapplication.model.bank.merchant.MonoBankMerchantEntity;
+import com.sonia.java.bankcheckapplication.model.bank.merchant.PrivatBankMerchantEntity;
+import com.sonia.java.bankcheckapplication.model.bank.req.balance.BalanceRequestData;
 import com.sonia.java.bankcheckapplication.model.bank.req.discharge.DischargeRequestData;
 import com.sonia.java.bankcheckapplication.model.bank.resp.CategoryDischargeResponse;
 import com.sonia.java.bankcheckapplication.model.user.*;
+import com.sonia.java.bankcheckapplication.model.user.req.ChangeUserPasswordRequest;
+import com.sonia.java.bankcheckapplication.model.user.req.MonoBankMerchantRequest;
+import com.sonia.java.bankcheckapplication.model.user.req.PrivatBankMerchantRequest;
+import com.sonia.java.bankcheckapplication.model.user.req.SaveUserRequest;
 import com.sonia.java.bankcheckapplication.repository.CategoryRepository;
 import com.sonia.java.bankcheckapplication.repository.MerchantRepository;
 import com.sonia.java.bankcheckapplication.repository.UserAuthorityRepository;
 import com.sonia.java.bankcheckapplication.repository.UserRepository;
+import com.sonia.java.bankcheckapplication.util.MerchantDataValidation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -135,11 +143,32 @@ public class UserService implements UserDetailsService {
         userRepository.save(user);
     }
 
+    public CardChekingUser addPrivatBankMerchant(String email, @NotNull PrivatBankMerchantRequest merchantRequest){
+        System.out.println(merchantRequest);
+        PrivatBankMerchantEntity merchantEntity =
+                PrivatBankMerchantEntity.fromPrivatBankMerchantRequest(merchantRequest);
+        return addUserMerchant(email, merchantEntity);
+    }
+
+    public CardChekingUser addMonoBankMerchant(String email, @NotNull MonoBankMerchantRequest merchantRequest){
+        System.out.println(merchantRequest);
+        MonoBankMerchantEntity merchantEntity =
+                MonoBankMerchantEntity.fromMonoBankMerchantRequest(merchantRequest);
+        MerchantDataValidation.validateMonoData(merchantEntity);
+
+        return addUserMerchant(email, merchantEntity);
+    }
+
     @Transactional
     public CardChekingUser addUserMerchant(String email, @NotNull BankMerchantEntity merchantEntity){
+
         CardChekingUser user = userRepository.findByEmail(email).orElseThrow(() -> CardCheckExceptions.userNotFound(email));
-        user.getMerchants().add(merchantEntity);
         merchantEntity.setUser(user);
+        if(user.getMerchants().contains(merchantEntity)){
+            return user;
+        }
+        user.getMerchants().add(merchantEntity);
+        System.out.println(user.getMerchants());
         merchantRepository.save(merchantEntity);
         user = userRepository.save(user);
         return user;
@@ -153,8 +182,6 @@ public class UserService implements UserDetailsService {
 
         for (Category category1: categorySet){
             categorySpent.put(category1, (float)0);
-            System.out.println(category1);
-            System.out.println(categorySpent.get(category1));
         }
 
 
@@ -163,7 +190,6 @@ public class UserService implements UserDetailsService {
             categoryDischarge.put(category, new ArrayList<>());
         }
 
-        Category tempCategory = new Category();
         boolean flag = false;
 
         for (BankDischarge discharge: discharges){
@@ -171,16 +197,14 @@ public class UserService implements UserDetailsService {
             for(Category category: categorySet){
                 for(DischargeEntity categoryItem: category.getDischarges()) {
                     if (discharge.getDescription() != null && discharge.getDescription().contains(categoryItem.getName())) {
-                        tempCategory.setName(category.getName());
-                        categoryDischarge.get(tempCategory).add(discharge);
-                        categorySpent.put(tempCategory, categorySpent.get(tempCategory) + discharge.getCardamount());
+                        categoryDischarge.get(category).add(discharge);
+                        categorySpent.put(category, categorySpent.get(category) + discharge.getCardamount());
                         flag = true;
                         break;
                     }
                     if (discharge.getTerminal() != null && discharge.getTerminal().contains(categoryItem.getName())) {
-                        tempCategory.setName(category.getName());
-                        categoryDischarge.get(tempCategory).add(discharge);
-                        categorySpent.put(tempCategory, categorySpent.get(tempCategory) + discharge.getCardamount());
+                        categoryDischarge.get(category).add(discharge);
+                        categorySpent.put(category, categorySpent.get(category) + discharge.getCardamount());
                         flag = true;
                         break;
                     }
@@ -197,12 +221,12 @@ public class UserService implements UserDetailsService {
 
         for (Category key : categoryDischarge.keySet()){
             responses.add(new CategoryDischargeResponse(
-                    key,
+                    key.getName(),
                     categoryDischarge.get(key),
                     categorySpent.get(key))
             );
         }
-        //responses.forEach(System.out::println);
+        responses.forEach(System.out::println);
 
         return responses;
 
@@ -210,33 +234,44 @@ public class UserService implements UserDetailsService {
     }
 
 
-    public void generateCategorySplitAnswer(@NotBlank String email, int month, int year) throws IOException {
+
+    public List<CategoryDischargeResponse> generateCategorySplitAnswer(@NotBlank String email, int month, int year) {
         CardChekingUser user = getUser(email);
         Set<BankMerchantEntity> bankMerchants = user.getMerchants();
 
         List<BankDischarge> discharges = new ArrayList<>();
 
+        System.out.println(bankMerchants);
 
         for (BankMerchantEntity bankMerchant: bankMerchants){
             BankFactory bankFactory= bankMerchant.getBank().getBankFactory();
-            bankFactory.getRequestData().setPeriod(month, year).nestMerchant(bankMerchant);
-            DischargeRequestData requestData = bankFactory.getRequestData();
+            DischargeRequestData requestData =
+                    bankFactory.getRequestData().setPeriod(month, year).nestMerchant(bankMerchant);
             String data = bankFactory.getDataReceiver().receiveDischarge(requestData);
             discharges.addAll(bankFactory.getParser().parseDischarge(data));
         }
+        return this.splitIntoCategories(discharges);
 
-        List<CategoryDischargeResponse> responses = this.splitIntoCategories(discharges);
-        ObjectMapper mapper = new ObjectMapper();
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        mapper.writeValue(out, responses);
-        String json = out.toString();
+    }
+
+    public float getMerchantTotalBalance(String email) {
+        CardChekingUser user = getUser(email);
+        Set<BankMerchantEntity> bankMerchants = user.getMerchants();
+        float balance = 0;
+
+        for (BankMerchantEntity merchant : bankMerchants) {
+            BankFactory monoBankFactory = merchant.getBank().getBankFactory();
+            BalanceRequestData balanceRequestData =
+                    monoBankFactory.getBalanceRequestData().nestMerchant(merchant);
+            String json = monoBankFactory.getDataReceiver().receiveBalance(balanceRequestData);
+            balance += monoBankFactory.getParser().parseBalance(json);
+        }
+        return balance;
+    }
 
 
 
     }
-
-
-}
 
 
 

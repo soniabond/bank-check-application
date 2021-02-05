@@ -2,6 +2,7 @@ package com.sonia.java.bankcheckapplication;
 
 import com.sonia.java.bankcheckapplication.model.bank.merchant.PrivatBankMerchantEntity;
 import com.sonia.java.bankcheckapplication.model.user.CardChekingUser;
+import com.sonia.java.bankcheckapplication.model.user.req.PrivatBankMerchantRequest;
 import com.sonia.java.bankcheckapplication.repository.CategoryRepository;
 import com.sonia.java.bankcheckapplication.repository.MerchantRepository;
 import com.sonia.java.bankcheckapplication.repository.UserAuthorityRepository;
@@ -69,10 +70,50 @@ public class UserServiceIntegrationTest {
         assertThat(userResponse).isEqualTo(user);
         assertThat(userResponse.getMerchants().contains(privatBankMerchantEntity)).isEqualTo(true);
         assertThat(userResponse.getMerchants().toArray()[0] instanceof PrivatBankMerchantEntity).isEqualTo(true);
+        PrivatBankMerchantEntity merchantEntity = (PrivatBankMerchantEntity) userResponse.getMerchants().toArray()[0];
+        assertThat(merchantEntity.getMerchantId().equals(merchantId)).isEqualTo(true);
+        assertThat(merchantEntity.getMerchantSignature().equals(merchantSignature)).isEqualTo(true);
 
         verify(userRepository).findByEmail(email);
         verify(userRepository).save(user);
         verify(merchantRepository).save(privatBankMerchantEntity);
     }
+
+    @Test
+    public void fromPrivatBankMerchant(){
+        String merchantId = "abc";
+        String merchantSignature = "abcde";
+        String cardNumber = "123456";
+        String email = "user@gmail.com";
+
+        PrivatBankMerchantRequest merchantRequest = new PrivatBankMerchantRequest();
+        merchantRequest.setMerchantId(merchantId);
+        merchantRequest.setMerchantSignature(merchantSignature);
+        merchantRequest.setCardNumber(cardNumber);
+
+
+        PrivatBankMerchantEntity merchantEntity =
+                PrivatBankMerchantEntity.fromPrivatBankMerchantRequest(merchantRequest);
+        CardChekingUser user = new CardChekingUser();
+        user.setId((long)123);
+        user.setEmail(email);
+
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+        when(merchantRepository.save(same(merchantEntity))).thenReturn(merchantEntity);
+        when(userRepository.save(same(user))).thenReturn(user);
+
+        CardChekingUser userResponse = userService.addPrivatBankMerchant(email, merchantRequest);
+        assertThat(userResponse).isEqualTo(user);
+        assertThat(userResponse.getMerchants().contains(merchantEntity)).isEqualTo(true);
+        assertThat(userResponse.getMerchants().toArray()[0] instanceof PrivatBankMerchantEntity).isEqualTo(true);
+        PrivatBankMerchantEntity merchantEntity1 = (PrivatBankMerchantEntity) userResponse.getMerchants().toArray()[0];
+        assertThat(merchantEntity1.getMerchantId().equals(merchantId)).isEqualTo(true);
+        assertThat(merchantEntity1.getMerchantSignature().equals(merchantSignature)).isEqualTo(true);
+
+        verify(userRepository).findByEmail(email);
+        verify(userRepository).save(user);
+//        verify(merchantRepository).save(merchantEntity);
+    }
+
 
 }

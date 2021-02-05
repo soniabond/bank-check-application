@@ -7,16 +7,22 @@ import java.io.Serializable;
 import java.util.List;
 
 public class CategoryDischargeResponse implements Serializable {
-    Category category;
+    String categoryName;
     List<BankDischarge> discharges;
     Float amount = (float)0;
 
-    public Category getCategory() {
-        return category;
+    public String getCategoryName() {
+        return categoryName;
     }
 
-    public void setCategory(Category category) {
-        this.category = category;
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
+    }
+
+    public CategoryDischargeResponse(String categoryName, List<BankDischarge> discharges, Float amount) {
+        this.categoryName = categoryName;
+        this.discharges = discharges;
+        this.amount = amount;
     }
 
     public List<BankDischarge> getDischarges() {
@@ -35,18 +41,13 @@ public class CategoryDischargeResponse implements Serializable {
         this.amount = amount;
     }
 
-    public CategoryDischargeResponse(Category category, List<BankDischarge> discharges, Float amount) {
-        this.category = category;
-        this.discharges = discharges;
-        this.amount = amount;
-    }
     public CategoryDischargeResponse() {
     }
 
     @Override
     public String toString() {
         return "CategoryDischargeResponse{" +
-                "category=" + category +
+                "category=" + categoryName +
                 ", amount=" + amount +
                 ", discharges=" + discharges +
                 '}';

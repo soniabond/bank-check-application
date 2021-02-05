@@ -9,7 +9,7 @@ card-checking:
   security:
     jwt:
       secret: GnBGcKJvQJ93KCVVxXxkYL7RNWqYACCaMT9pNXmx7R949KKnrFsad3GVD3VkK3Qw
-      expireIn: 600000
+      expireIn: 1500000
 
 spring:
   datasource:

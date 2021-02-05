@@ -8,6 +8,7 @@ import com.sonia.java.bankcheckapplication.config.security.properties.CardChecki
 import com.sonia.java.bankcheckapplication.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;

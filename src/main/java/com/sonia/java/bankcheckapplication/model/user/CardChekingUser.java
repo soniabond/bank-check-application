@@ -37,7 +37,7 @@ public class CardChekingUser {
     private Map<KnownAuthority, CardCheckingUserAuthority> authorities = new EnumMap<>(KnownAuthority.class);
 
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
     private Set<BankMerchantEntity>  merchants = new HashSet<>();
 
     public Set<BankMerchantEntity> getMerchants() {

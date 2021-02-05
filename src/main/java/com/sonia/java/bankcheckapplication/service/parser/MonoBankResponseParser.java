@@ -2,6 +2,7 @@ package com.sonia.java.bankcheckapplication.service.parser;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sonia.java.bankcheckapplication.exceptions.BankApiExceptions;
 import com.sonia.java.bankcheckapplication.model.bank.balance.MonoBankBalance;
 import com.sonia.java.bankcheckapplication.model.bank.discharge.BankDischarge;
 import com.sonia.java.bankcheckapplication.model.bank.discharge.MonoBankDischarge;
@@ -9,9 +10,11 @@ import com.sonia.java.bankcheckapplication.model.bank.resp.MonoBankDischargeResp
 import com.sonia.java.bankcheckapplication.model.bank.resp.balanceApiResp.MonoBankBalanceWebApiResponseJson;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,7 +24,8 @@ public class MonoBankResponseParser implements ResponseParser {
 
 
     @Override
-    public List<BankDischarge> parseDischarge(String json) {
+    public List<BankDischarge> parseDischarge(String json) throws ResponseStatusException{
+        validateData(json);
         json = json.split("\\[")[1];
         json = '['+json;
         ObjectMapper mapper = new ObjectMapper();
@@ -43,7 +47,8 @@ public class MonoBankResponseParser implements ResponseParser {
     }
 
     @Override
-    public float parseBalance(String parsableJson) {
+    public float parseBalance(String parsableJson) throws ResponseStatusException {
+        validateData(parsableJson);
         String json = parsableJson.split("Date")[0];
         json = json.substring(5, json.length()-2);
         System.out.println(json);
@@ -59,5 +64,13 @@ public class MonoBankResponseParser implements ResponseParser {
             e.printStackTrace();
         }
         return 0;
+    }
+
+
+    public void validateData(String parsableJson) throws ResponseStatusException{
+        String errorMarker = "403 Forbidden";
+        if (parsableJson.contains(errorMarker)){
+            throw BankApiExceptions.invalidXTokenException();
+        }
     }
 }

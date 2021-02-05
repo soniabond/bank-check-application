@@ -3,6 +3,7 @@ package com.sonia.java.bankcheckapplication.model.bank.merchant;
 import com.sonia.java.bankcheckapplication.model.bank.Bank;
 import com.sonia.java.bankcheckapplication.model.bank.category.Category;
 import com.sonia.java.bankcheckapplication.model.user.CardChekingUser;
+import org.springframework.security.web.header.writers.frameoptions.XFrameOptionsHeaderWriter;
 
 import javax.persistence.*;
 
@@ -27,7 +28,6 @@ public abstract class BankMerchantEntity {
     public void setUser(CardChekingUser user) {
         this.user = user;
     }
-//protected Bank bank;
 
     public Long getId() {
         return id;
@@ -38,10 +38,11 @@ public abstract class BankMerchantEntity {
     }
 
     public abstract Bank getBank();
-//
-//    public void setBank(Bank bank) {
-//        this.bank = bank;
-//    }
+
+
+
+
+
 
 
 

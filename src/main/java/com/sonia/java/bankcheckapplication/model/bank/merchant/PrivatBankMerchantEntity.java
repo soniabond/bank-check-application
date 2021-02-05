@@ -3,6 +3,7 @@ package com.sonia.java.bankcheckapplication.model.bank.merchant;
 import com.sonia.java.bankcheckapplication.ApplicationContextProvider;
 import com.sonia.java.bankcheckapplication.model.bank.Bank;
 import com.sonia.java.bankcheckapplication.model.bank.PrivatBank;
+import com.sonia.java.bankcheckapplication.model.user.req.PrivatBankMerchantRequest;
 import org.hibernate.validator.constraints.CodePointLength;
 
 import javax.persistence.Column;
@@ -52,6 +53,15 @@ public class PrivatBankMerchantEntity extends BankMerchantEntity {
 
     public PrivatBankMerchantEntity() {
       }
+
+
+    public static PrivatBankMerchantEntity fromPrivatBankMerchantRequest(PrivatBankMerchantRequest merchantRequest){
+        PrivatBankMerchantEntity merchantEntity = new PrivatBankMerchantEntity();
+        merchantEntity.setMerchantId(merchantRequest.getMerchantId());
+        merchantEntity.setMerchantSignature(merchantRequest.getMerchantSignature());
+        merchantEntity.setCardNumber(merchantRequest.getCardNumber());
+        return merchantEntity;
+    }
 
     @Override
     public String toString() {
