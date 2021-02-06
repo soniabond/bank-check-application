@@ -59,6 +59,12 @@ public class UserController {
 
     }
 
+    @PostMapping("/admins")
+    @ResponseStatus(HttpStatus.CREATED)
+    public UserResponse registerAdmin(@RequestBody @Valid SaveUserRequest request) {
+        return userService.createAdmin(request);
+    }
+
     @GetMapping
     @PageableAsQueryParam
     public Page<UserResponse> listUsers(@Parameter(hidden = true) Pageable pageable) {

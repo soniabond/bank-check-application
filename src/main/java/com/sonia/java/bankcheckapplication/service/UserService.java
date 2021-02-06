@@ -39,7 +39,10 @@ import javax.validation.constraints.NotNull;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -66,6 +69,37 @@ public class UserService implements UserDetailsService {
         this.passwordEncoder = passwordEncoder;
         this.categoryRepository = categoryRepository;
     }
+
+    @Transactional
+    public void mergeAdmins(List<SaveUserRequest> requests) {
+        if (requests.isEmpty()) return;
+        Map<KnownAuthority, CardCheckingUserAuthority> authorities = getAdminAuthorities();
+        for (SaveUserRequest request : requests) {
+            String email = request.getEmail();
+            String nickname = request.getFirstName();
+            CardChekingUser user = userRepository.findByEmail(email).orElseGet(() -> {
+                var newUser = new CardChekingUser();
+                newUser.setCreatedAt(Instant.now());
+                newUser.setEmail(email);
+                newUser.setFirstName(nickname);
+                return newUser;
+            });
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+            user.getAuthorities().putAll(authorities);
+            System.out.println(user);
+            userRepository.save(user);
+        }
+    }
+
+    private Map<KnownAuthority, CardCheckingUserAuthority> getAdminAuthorities() {
+        return authorityRepository.findAllByValueIn(UserAuthorityRepository.ADMIN_AUTHORITIES)
+                .collect(Collectors.toMap(
+                        CardCheckingUserAuthority::getValue,
+                        Function.identity(),
+                        (e1, e2) -> e2,
+                        () -> new EnumMap<>(KnownAuthority.class)));
+    }
+
 
     @Transactional
     public UserResponse create(SaveUserRequest request) {
@@ -115,6 +149,12 @@ public class UserService implements UserDetailsService {
         Map<KnownAuthority, CardCheckingUserAuthority> authorities = new EnumMap<>(KnownAuthority.class);
         authorities.put(KnownAuthority.ROLE_USER, authority);
         return authorities;
+    }
+
+    @Transactional
+    public UserResponse createAdmin(SaveUserRequest request) {
+        validateUniqueFields(request);
+        return UserResponse.fromUser(save(request, getAdminAuthorities()));
     }
 
     @Transactional(readOnly = true)

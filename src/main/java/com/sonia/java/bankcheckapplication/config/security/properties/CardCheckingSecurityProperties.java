@@ -24,6 +24,19 @@ public class CardCheckingSecurityProperties {
     public void setJwt(CardCheckingJWTProperties jwt) {
         this.jwt = jwt;
     }
+
+    private Map<@NotBlank String, @Valid CardCheckingAdminProperties> admins;
+
+    public void setAdmins(Map<String, CardCheckingAdminProperties> admins) {
+        this.admins = admins;
+    }
+
+    public Map<String, CardCheckingAdminProperties> getAdmins() {
+        return admins;
+    }
+
+
+
 }
 
 

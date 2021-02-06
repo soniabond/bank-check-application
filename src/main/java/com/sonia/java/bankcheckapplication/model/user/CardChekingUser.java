@@ -108,4 +108,13 @@ public class CardChekingUser {
     public int hashCode() {
         return Objects.hash(email);
     }
+
+    @Override
+    public String toString() {
+        return "CardChekingUser{" +
+                "email='" + email + '\'' +
+                ", firstName='" + firstName + '\'' +
+                ", password='" + password + '\'' +
+                '}';
+    }
 }

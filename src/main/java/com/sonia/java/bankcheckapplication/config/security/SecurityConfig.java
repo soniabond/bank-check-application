@@ -5,10 +5,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sonia.java.bankcheckapplication.config.security.filters.JWTAuthenticationFilter;
 import com.sonia.java.bankcheckapplication.config.security.filters.JWTAuthorizationFilter;
 import com.sonia.java.bankcheckapplication.config.security.properties.CardCheckingSecurityProperties;
+import com.sonia.java.bankcheckapplication.model.user.req.SaveUserRequest;
 import com.sonia.java.bankcheckapplication.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -23,6 +25,10 @@ import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import javax.annotation.PostConstruct;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Configuration
 @EnableConfigurationProperties(CardCheckingSecurityProperties.class)
@@ -49,6 +55,22 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         this.objectMapper = objectMapper;
     }
 
+    @PostConstruct
+    public void init() {
+        setupDefaultAdmins();
+    }
+
+    private void setupDefaultAdmins() {
+        List<SaveUserRequest> requests = securityProperties.getAdmins().entrySet().stream()
+                .map(entry -> new SaveUserRequest(
+                        entry.getValue().getEmail(),
+                        entry.getValue().getPassword(),
+                        entry.getKey()))
+                .peek(admin -> log.info("Default admin found: {} <{}>", admin.getFirstName(), admin.getEmail()))
+                .collect(Collectors.toList());
+        userService.mergeAdmins(requests);
+    }
+
     @Override
     public void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(userService).passwordEncoder(passwordEncoder);
@@ -64,6 +86,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 // allow user registration
                 .antMatchers(HttpMethod.POST, "/api/v1/users").permitAll()
                 // by default, require authentication
+                .antMatchers(HttpMethod.POST, "/api/v1/users/admins").hasRole("ADMIN")
+                .antMatchers(HttpMethod.POST, "/api/v1/categories/add").hasRole("ADMIN")
                 .anyRequest().authenticated()
                 .and()
                 // login filter
