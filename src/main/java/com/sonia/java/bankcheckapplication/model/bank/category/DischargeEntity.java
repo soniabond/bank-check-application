@@ -19,6 +19,15 @@ public class DischargeEntity {
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
+    public DischargeEntity(Long id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    public DischargeEntity() {
+
+    }
+
     public Long getId() {
         return id;
     }
@@ -54,5 +63,12 @@ public class DischargeEntity {
     @Override
     public int hashCode() {
         return Objects.hash(name);
+    }
+
+    @Override
+    public String toString() {
+        return "DischargeEntity{" +
+                "name='" + name + '\'' +
+                '}';
     }
 }

@@ -71,6 +71,7 @@ public class Category {
     public String toString() {
         return "Category{" +
                 "name='" + name + '\'' +
+                ", discharges=" + discharges +
                 '}';
     }
 }
