@@ -5,12 +5,14 @@ import com.sonia.java.bankcheckapplication.model.bank.discharge.BankDischarge;
 import com.sonia.java.bankcheckapplication.model.bank.discharge.PrivatBankDischarge;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 @Component
 @Scope("prototype")
@@ -19,7 +21,14 @@ public class PrivatBankResponseParser implements ResponseParser {
 
     @Override
     public List<BankDischarge> parseDischarge(String xml) {
-        validateResponse(xml);
+        System.out.println(xml);
+        try {
+            validateResponse(xml);
+        }catch (ResponseStatusException e){
+            if(Objects.equals(e.getMessage(), "invalid merchant data")){
+                return new ArrayList<>();
+            }
+        }
         List<String> xmls = new ArrayList<>(Arrays.asList(xml.split("\n")));
 
         xmls.remove(0);
@@ -34,7 +43,13 @@ public class PrivatBankResponseParser implements ResponseParser {
 
     @Override
     public float parseBalance(String parsableResponse) {
-        validateResponse(parsableResponse);
+        try {
+            validateResponse(parsableResponse);
+        }catch (ResponseStatusException e){
+            if(Objects.equals(e.getMessage(), "invalid merchant data")){
+                return 0;
+            }
+        }
         String balance = parsableResponse.split("<balance>")[1].split("<")[0];
         return Float.parseFloat(balance);
     }

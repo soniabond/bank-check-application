@@ -1,9 +1,7 @@
 package com.sonia.java.bankcheckapplication.model.bank.merchant;
 
 import com.sonia.java.bankcheckapplication.model.bank.Bank;
-import com.sonia.java.bankcheckapplication.model.bank.category.Category;
-import com.sonia.java.bankcheckapplication.model.user.CardChekingUser;
-import org.springframework.security.web.header.writers.frameoptions.XFrameOptionsHeaderWriter;
+import com.sonia.java.bankcheckapplication.model.user.CardCheckingUser;
 
 import javax.persistence.*;
 
@@ -19,13 +17,13 @@ public abstract class BankMerchantEntity {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private CardChekingUser user;
+    private CardCheckingUser user;
 
-    public CardChekingUser getUser() {
+    public CardCheckingUser getUser() {
         return user;
     }
 
-    public void setUser(CardChekingUser user) {
+    public void setUser(CardCheckingUser user) {
         this.user = user;
     }
 

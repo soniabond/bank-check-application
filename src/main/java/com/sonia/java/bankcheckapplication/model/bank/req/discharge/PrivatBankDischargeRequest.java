@@ -95,21 +95,21 @@ public class PrivatBankDischargeRequest extends DischargeRequestData {
     private String getSignature(){
         String signature = "<oper>cmt</oper>" +
                 "<wait>0</wait>" +
-                "<test>0</test> " +
+                "<test>0</test>" +
                 "<payment id=\"\">\n" +
                 "                        <prop name=\"sd\" value=\""+this.startPeriod+"\" />\n" +
                 "                        <prop name=\"ed\" value=\""+this.endPeriod+"\" />\n" +
                 "                        <prop name=\"card\" value=\""+this.cardNumber+"\" />\n" +
-                "                    </payment>"+this.merchantSignature;
+                "                    </payment>" +this.merchantSignature;
         signature = HashCoding.hashSignatureForPrivatBank(signature);
         return signature;
     }
 
     public String formRequestBody(){
-        return  "<?xml version='1.0' encoding='UTF-8'?><request><merchant><id>"+this.merchantId+"</id><signature>" + getSignature() + "</signature></merchant><data>" +
+        return  "<?xml version='1.0' encoding='UTF-8'?><request version=\"1.0\"><merchant><id>"+this.merchantId+"</id><signature>" + getSignature() + "</signature></merchant><data>" +
                 "<oper>cmt</oper>" +
                 "<wait>0</wait>" +
-                "<test>0</test> " +
+                "<test>0</test>" +
                 "<payment id=\"\">\n" +
                 "                        <prop name=\"sd\" value=\""+this.startPeriod+"\" />\n" +
                 "                        <prop name=\"ed\" value=\""+this.endPeriod+"\" />\n" +
@@ -156,7 +156,8 @@ public class PrivatBankDischargeRequest extends DischargeRequestData {
         return "PrivatBankDischargeRequest{" +
                 "url='" + url + '\'' +
                 ", merchantId='" + merchantId + '\'' +
+                ", merchantSignature='" + merchantSignature + '\'' +
                 ", cardNumber='" + cardNumber + '\'' +
-                '}';
+                '}' + this.formRequestBody();
     }
 }

@@ -3,11 +3,10 @@ package com.sonia.java.bankcheckapplication.controller;
 
 import com.sonia.java.bankcheckapplication.exceptions.CardCheckExceptions;
 import com.sonia.java.bankcheckapplication.model.bank.req.CategoryDischargeRequest;
+import com.sonia.java.bankcheckapplication.model.bank.resp.BalanceResponse;
 import com.sonia.java.bankcheckapplication.model.bank.resp.CategoryDischargeResponse;
-import com.sonia.java.bankcheckapplication.model.user.req.ChangeUserPasswordRequest;
-import com.sonia.java.bankcheckapplication.model.user.req.MonoBankMerchantRequest;
-import com.sonia.java.bankcheckapplication.model.user.req.PrivatBankMerchantRequest;
-import com.sonia.java.bankcheckapplication.model.user.req.SaveUserRequest;
+import com.sonia.java.bankcheckapplication.model.bank.resp.UserCategoryLimitResponse;
+import com.sonia.java.bankcheckapplication.model.user.req.*;
 import com.sonia.java.bankcheckapplication.model.user.UserResponse;
 import com.sonia.java.bankcheckapplication.service.CategoryService;
 import com.sonia.java.bankcheckapplication.service.UserService;
@@ -22,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -65,9 +65,22 @@ public class UserController {
         categoryService.addCategoryDischarges(categoryDischargeRequests);
     }
 
-    @GetMapping("/me/categories")
-    public List<CategoryDischargeResponse> getCategoryAnalytics(@AuthenticationPrincipal String email) throws IOException {
-        return userService.generateCategorySplitAnswer(email, 3, 2021);
+    @PostMapping("me/categories/limits/add")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void addCategories(@AuthenticationPrincipal String email, @RequestBody ChangeCategoryLimitRequest request){
+
+        userService.setCategoryLimit(request.getEmail(), request.getCategoryName(), request.getNewLimit());
+    }
+
+    @GetMapping("me/categories/limits")
+    public List<UserCategoryLimitResponse> getCategories(@AuthenticationPrincipal String email){
+        return userService.getAllCategoriesWithLimits(email);
+    }
+
+    @GetMapping("/me/discharges")
+    public Set<CategoryDischargeResponse> getCategoryAnalytics(@AuthenticationPrincipal String email, @RequestParam("month") int month,
+                                                               @RequestParam("year") int year) throws IOException {
+        return userService.generateCategorySplitAnswer(email, month, year);
 
     }
 
@@ -95,4 +108,15 @@ public class UserController {
     public UserResponse register(@RequestBody @Valid SaveUserRequest request){
        return userService.create(request);
     }
+
+    @GetMapping("/me/balance")
+    public BalanceResponse getBalance(@AuthenticationPrincipal String email){
+
+        float balance = this.userService.getMerchantTotalBalance(email);
+        return new
+                BalanceResponse(balance);
+
+    }
+
+
 }

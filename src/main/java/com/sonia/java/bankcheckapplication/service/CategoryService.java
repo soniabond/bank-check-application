@@ -13,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class CategoryService {
@@ -36,6 +38,12 @@ public class CategoryService {
         return categoryRepository.findAll();
     }
 
+    public Set<String> getCategoryResponse() {
+        return getAllCategories().stream()
+                .map(Category::getName)
+                .collect(Collectors.toSet());
+    }
+
     @Transactional(readOnly = true)
     public Optional<Category> getCategoryByName(String name){
         return categoryRepository.findByName(name);
@@ -47,6 +55,7 @@ public class CategoryService {
         List<Category> categories = new ArrayList<>();
         Category category = null;
         for(CategoryDischargeRequest categoryDischargeRequest: categoryDischargeRequests){
+
             if (categoryDischargeRequest.getDischarge() == null){
                 category = addCategory(categoryDischargeRequest.getCategory());
                 categories.add(category);
@@ -106,6 +115,7 @@ public class CategoryService {
         category.ifPresent(categoryRepository::delete);
         return category;
     }
+
 
 
 

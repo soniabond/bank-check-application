@@ -40,9 +40,8 @@ public class HashCoding {
     }
 
     public static String md5Apache(String st) {
-        String md5Hex = DigestUtils.md5Hex(st);
 
-        return md5Hex;
+        return DigestUtils.md5Hex(st);
     }
 
     public static String hashSignatureForPrivatBank(String data){

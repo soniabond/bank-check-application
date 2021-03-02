@@ -20,7 +20,7 @@ public class CardCheckingUserAuthority {
     private KnownAuthority value;
 
     @ManyToMany(mappedBy = "authorities")
-    private List<CardChekingUser> users;
+    private List<CardCheckingUser> users;
 
     public Integer getId() {
         return id;
@@ -38,11 +38,11 @@ public class CardCheckingUserAuthority {
         this.value = value;
     }
 
-    public List<CardChekingUser> getUsers() {
+    public List<CardCheckingUser> getUsers() {
         return users;
     }
 
-    public void setUsers(List<CardChekingUser> users) {
+    public void setUsers(List<CardCheckingUser> users) {
         this.users = users;
     }
 

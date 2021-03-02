@@ -1,6 +1,6 @@
 package com.sonia.java.bankcheckapplication.model.user;
 
-import com.sonia.java.bankcheckapplication.model.bank.category.DischargeEntity;
+import com.sonia.java.bankcheckapplication.model.bank.category.UserCategoryLimit;
 import com.sonia.java.bankcheckapplication.model.bank.merchant.BankMerchantEntity;
 import org.hibernate.annotations.NaturalId;
 
@@ -10,7 +10,7 @@ import java.util.*;
 
 @Entity
 @Table(name = "users")
-public class CardChekingUser {
+public class CardCheckingUser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -39,6 +39,17 @@ public class CardChekingUser {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
     private Set<BankMerchantEntity>  merchants = new HashSet<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private Set<UserCategoryLimit> limits = new HashSet<>();
+
+    public Set<UserCategoryLimit> getLimits() {
+        return limits;
+    }
+
+    public void setLimits(Set<UserCategoryLimit> limits) {
+        this.limits = limits;
+    }
 
     public Set<BankMerchantEntity> getMerchants() {
         return merchants;
@@ -100,7 +111,7 @@ public class CardChekingUser {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        CardChekingUser user = (CardChekingUser) o;
+        CardCheckingUser user = (CardCheckingUser) o;
         return email.equals(user.email);
     }
 

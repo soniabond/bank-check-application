@@ -3,10 +3,8 @@ package com.sonia.java.bankcheckapplication.model.user;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.time.Instant;
-import java.time.ZoneOffset;
 import java.util.EnumSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class UserResponse {
 
@@ -21,7 +19,7 @@ public class UserResponse {
 
     private Set<KnownAuthority> authorities;
 
-    public static UserResponse fromUser(CardChekingUser user){
+    public static UserResponse fromUser(CardCheckingUser user){
         var response = new UserResponse();
         response.id = user.getId();
         response.email = user.getEmail();

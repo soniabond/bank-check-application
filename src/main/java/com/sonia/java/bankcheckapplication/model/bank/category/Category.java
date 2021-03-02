@@ -3,9 +3,7 @@ package com.sonia.java.bankcheckapplication.model.bank.category;
 import org.hibernate.annotations.NaturalId;
 
 import javax.persistence.*;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Table(name = "category")
@@ -22,12 +20,23 @@ public class Category {
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Set<DischargeEntity>  discharges = new HashSet<>();
 
+    @OneToMany(mappedBy = "category", cascade = CascadeType.REMOVE)
+    private List<UserCategoryLimit> limits = new ArrayList<>();
+
     public Category() {
 
     }
     public Category(Integer id, String name) {
         this.id = id;
         this.name = name;
+    }
+
+    public List<UserCategoryLimit> getLimits() {
+        return limits;
+    }
+
+    public void setLimits(List<UserCategoryLimit> limits) {
+        this.limits = limits;
     }
 
     public Integer getId() {

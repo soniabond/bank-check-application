@@ -1,13 +1,15 @@
 package com.sonia.java.bankcheckapplication.repository;
 
-import com.sonia.java.bankcheckapplication.model.user.CardChekingUser;
+import com.sonia.java.bankcheckapplication.model.user.CardCheckingUser;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
-public interface UserRepository extends JpaRepository<CardChekingUser, Long> {
+@Repository
+public interface UserRepository extends JpaRepository<CardCheckingUser, Long> {
 
-    Optional<CardChekingUser> findByEmail(String email);
+    Optional<CardCheckingUser> findByEmail(String email);
 
     boolean existsByEmail(String email);
 

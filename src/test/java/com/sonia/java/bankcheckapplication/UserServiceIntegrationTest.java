@@ -1,12 +1,11 @@
 package com.sonia.java.bankcheckapplication;
 
+import com.sonia.java.bankcheckapplication.model.bank.category.Category;
+import com.sonia.java.bankcheckapplication.model.bank.category.UserCategoryLimit;
 import com.sonia.java.bankcheckapplication.model.bank.merchant.PrivatBankMerchantEntity;
-import com.sonia.java.bankcheckapplication.model.user.CardChekingUser;
+import com.sonia.java.bankcheckapplication.model.user.CardCheckingUser;
 import com.sonia.java.bankcheckapplication.model.user.req.PrivatBankMerchantRequest;
-import com.sonia.java.bankcheckapplication.repository.CategoryRepository;
-import com.sonia.java.bankcheckapplication.repository.MerchantRepository;
-import com.sonia.java.bankcheckapplication.repository.UserAuthorityRepository;
-import com.sonia.java.bankcheckapplication.repository.UserRepository;
+import com.sonia.java.bankcheckapplication.repository.*;
 import com.sonia.java.bankcheckapplication.service.UserService;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,6 +13,7 @@ import org.junit.runner.RunWith;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.sql.Array;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,6 +35,8 @@ public class UserServiceIntegrationTest {
 
     CategoryRepository categoryRepository;
 
+    UserCategoryLimitRepository limitRepository;
+
     @Before
     public void setUp(){
         userRepository = mock(UserRepository.class);
@@ -42,10 +44,11 @@ public class UserServiceIntegrationTest {
         merchantRepository = mock(MerchantRepository.class);
         passwordEncoder = mock(PasswordEncoder.class);
         categoryRepository = mock(CategoryRepository.class);
+        limitRepository = mock(UserCategoryLimitRepository.class);
         userService = new UserService(userRepository,
                 authorityRepository,
                 merchantRepository,
-                passwordEncoder, categoryRepository);
+                passwordEncoder, categoryRepository, limitRepository);
     }
 
     @Test
@@ -58,7 +61,7 @@ public class UserServiceIntegrationTest {
         privatBankMerchantEntity.setMerchantId(merchantId);
         privatBankMerchantEntity.setMerchantSignature(merchantSignature);
         privatBankMerchantEntity.setCardNumber(cardNumber);
-        CardChekingUser user = new CardChekingUser();
+        CardCheckingUser user = new CardCheckingUser();
         user.setId((long)123);
         user.setEmail(email);
 
@@ -66,7 +69,7 @@ public class UserServiceIntegrationTest {
         when(merchantRepository.save(same(privatBankMerchantEntity))).thenReturn(privatBankMerchantEntity);
         when(userRepository.save(same(user))).thenReturn(user);
 
-        CardChekingUser userResponse = userService.addUserMerchant(email, privatBankMerchantEntity);
+        CardCheckingUser userResponse = userService.addUserMerchant(email, privatBankMerchantEntity);
         assertThat(userResponse).isEqualTo(user);
         assertThat(userResponse.getMerchants().contains(privatBankMerchantEntity)).isEqualTo(true);
         assertThat(userResponse.getMerchants().toArray()[0] instanceof PrivatBankMerchantEntity).isEqualTo(true);
@@ -94,7 +97,7 @@ public class UserServiceIntegrationTest {
 
         PrivatBankMerchantEntity merchantEntity =
                 PrivatBankMerchantEntity.fromPrivatBankMerchantRequest(merchantRequest);
-        CardChekingUser user = new CardChekingUser();
+        CardCheckingUser user = new CardCheckingUser();
         user.setId((long)123);
         user.setEmail(email);
 
@@ -102,7 +105,7 @@ public class UserServiceIntegrationTest {
         when(merchantRepository.save(same(merchantEntity))).thenReturn(merchantEntity);
         when(userRepository.save(same(user))).thenReturn(user);
 
-        CardChekingUser userResponse = userService.addPrivatBankMerchant(email, merchantRequest);
+        CardCheckingUser userResponse = userService.addPrivatBankMerchant(email, merchantRequest);
         assertThat(userResponse).isEqualTo(user);
         assertThat(userResponse.getMerchants().contains(merchantEntity)).isEqualTo(true);
         assertThat(userResponse.getMerchants().toArray()[0] instanceof PrivatBankMerchantEntity).isEqualTo(true);
@@ -113,6 +116,41 @@ public class UserServiceIntegrationTest {
         verify(userRepository).findByEmail(email);
         verify(userRepository).save(user);
 //        verify(merchantRepository).save(merchantEntity);
+    }
+
+    @Test
+    public void setCategoryLimitTest(){
+        String email = "user@gmail.com";
+        CardCheckingUser user = new CardCheckingUser();
+        user.setId((long)123);
+        user.setEmail(email);
+
+        String name = "taxi";
+        Category category = new Category();
+        category.setName(name);
+        category.setId(1);
+
+        String name1 = "flowers";
+        Category category1 = new Category();
+        category.setName(name1);
+        category.setId(2);
+
+        int newLimit = 500;
+
+
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+        when(categoryRepository.findByName(name)).thenReturn(Optional.of(category));
+        when(userRepository.save(same(user))).thenReturn(user);
+        CardCheckingUser userResponse = userService.setCategoryLimit(email, name, 100);
+
+        assertThat(userResponse.getLimits().size()).isEqualTo(1);
+
+        CardCheckingUser userResponse1 = userService.setCategoryLimit(email, name, newLimit);
+        assertThat(userResponse1.getLimits().size()).isEqualTo(1);
+
+        UserCategoryLimit userCategoryLimit = (UserCategoryLimit) userResponse1.getLimits().toArray()[0];
+        assertThat(userCategoryLimit.getLimit()).isEqualTo(newLimit);
+
     }
 
 
