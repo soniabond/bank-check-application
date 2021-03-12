@@ -91,7 +91,7 @@ public class MonoBankDischargeRequest extends DischargeRequestData {
         int currDay = localDate.getDayOfMonth();
         if(month == localDate.getMonthValue() && year == localDate.getYear()){
             endDate = localDate;
-            startDate = localDate.minusDays(currDay-1);
+            startDate = localDate.minusDays(currDay-2);
         }
         else {
             startDate = LocalDate.of(year, month,1);

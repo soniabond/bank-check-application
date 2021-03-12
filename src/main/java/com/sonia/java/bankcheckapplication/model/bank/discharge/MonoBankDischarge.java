@@ -9,13 +9,16 @@ public class MonoBankDischarge extends BankDischarge {
 
     public MonoBankDischarge() {
 
+
     }
+
 
     public MonoBankDischarge(MonoBankDischargeResponse dischargeResponse){
         this.cardamount = (float)dischargeResponse.getOperationAmount()/100;
         this.terminal = dischargeResponse.getDescription();
         this.description = dischargeResponse.getComment();
         this.trandate = new Date(Long.parseLong(dischargeResponse.getTime())*1000);
+        this.bankName = "Monobank";
     }
 
     @Override

@@ -8,6 +8,19 @@ public abstract class BankDischarge implements Serializable {
     protected Float cardamount;
     protected String terminal;
     protected String description;
+    protected String bankName;
+
+
+    public BankDischarge() {
+    }
+
+    public String getBankName() {
+        return bankName;
+    }
+
+    public void setBankName(String bankName) {
+        this.bankName = bankName;
+    }
 
     public Date getTrandate() {
         return trandate;

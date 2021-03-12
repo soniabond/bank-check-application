@@ -3,6 +3,7 @@ package com.sonia.java.bankcheckapplication;
 import com.sonia.java.bankcheckapplication.model.bank.category.Category;
 import com.sonia.java.bankcheckapplication.model.bank.category.UserCategoryLimit;
 import com.sonia.java.bankcheckapplication.model.bank.merchant.PrivatBankMerchantEntity;
+import com.sonia.java.bankcheckapplication.model.bank.resp.UserCategoryLimitResponse;
 import com.sonia.java.bankcheckapplication.model.user.CardCheckingUser;
 import com.sonia.java.bankcheckapplication.model.user.req.PrivatBankMerchantRequest;
 import com.sonia.java.bankcheckapplication.repository.*;
@@ -10,7 +11,12 @@ import com.sonia.java.bankcheckapplication.service.UserService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.sql.Array;
@@ -21,6 +27,7 @@ import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.*;
 
 @RunWith(SpringRunner.class)
+
 public class UserServiceIntegrationTest {
 
     UserRepository userRepository;
@@ -51,8 +58,7 @@ public class UserServiceIntegrationTest {
                 passwordEncoder, categoryRepository, limitRepository);
     }
 
-    @Test
-    public void testAddUserMerchant(){
+    /*public void testAddUserMerchant(){
         String merchantId = "abc";
         String merchantSignature = "abcde";
         String cardNumber = "123456";
@@ -82,7 +88,7 @@ public class UserServiceIntegrationTest {
         verify(merchantRepository).save(privatBankMerchantEntity);
     }
 
-    @Test
+
     public void fromPrivatBankMerchant(){
         String merchantId = "abc";
         String merchantSignature = "abcde";
@@ -116,7 +122,7 @@ public class UserServiceIntegrationTest {
         verify(userRepository).findByEmail(email);
         verify(userRepository).save(user);
 //        verify(merchantRepository).save(merchantEntity);
-    }
+    }*/
 
     @Test
     public void setCategoryLimitTest(){
@@ -152,6 +158,37 @@ public class UserServiceIntegrationTest {
         assertThat(userCategoryLimit.getLimit()).isEqualTo(newLimit);
 
     }
+
+    @Test
+    public void getCategoryLimitAfterSavingNew(){
+        String email = "user@gmail.com";
+        CardCheckingUser user = new CardCheckingUser();
+        user.setId((long)123);
+        user.setEmail(email);
+
+        String name = "taxi";
+        Category category = new Category();
+        category.setName(name);
+        category.setId(1);
+        int newLimit = 500;
+
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+        when(categoryRepository.findByName(name)).thenReturn(Optional.of(category));
+        when(userRepository.save(same(user))).thenReturn(user);
+        CardCheckingUser userResponse = userService.setCategoryLimit(email, name, 500);
+
+        assertThat(userResponse.getLimits().size()).isEqualTo(1);
+
+        UserCategoryLimitResponse categoryLimitResponse = userService.getCategoryLimit(email, name);
+        assertThat(categoryLimitResponse.getLimit() == 500).isEqualTo(true);
+        assertThat(categoryLimitResponse.getCategoryName().equals(name)).isEqualTo(true);
+        verify(categoryRepository, times(2)).findByName(name);
+
+
+
+    }
+
+
 
 
 }

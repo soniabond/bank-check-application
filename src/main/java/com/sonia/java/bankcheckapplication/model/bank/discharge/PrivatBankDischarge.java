@@ -4,6 +4,10 @@ import java.util.Objects;
 
 public class PrivatBankDischarge extends BankDischarge {
 
+    public PrivatBankDischarge() {
+        this.bankName = "Privatbank";
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

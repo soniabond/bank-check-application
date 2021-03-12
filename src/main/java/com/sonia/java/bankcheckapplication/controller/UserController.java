@@ -18,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import javax.sound.midi.Soundbank;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.util.List;
@@ -68,13 +69,21 @@ public class UserController {
     @PostMapping("me/categories/limits/add")
     @ResponseStatus(HttpStatus.CREATED)
     public void addCategories(@AuthenticationPrincipal String email, @RequestBody ChangeCategoryLimitRequest request){
-
-        userService.setCategoryLimit(request.getEmail(), request.getCategoryName(), request.getNewLimit());
+        System.out.println("LIMIT");
+        userService.setCategoryLimit(email, request.getCategoryName(), request.getNewLimit());
     }
 
     @GetMapping("me/categories/limits")
     public List<UserCategoryLimitResponse> getCategories(@AuthenticationPrincipal String email){
         return userService.getAllCategoriesWithLimits(email);
+    }
+
+    @GetMapping("me/categories/limit")
+    public UserCategoryLimitResponse getCategories(@AuthenticationPrincipal String email,  CategoryLimitRequest request){
+        System.out.println("HELLLO");
+        UserCategoryLimitResponse response = userService.getCategoryLimit(email, request.getCategoryName());
+        System.out.println(response.getCategoryName() + ' ' + response.getLimit());
+        return response;
     }
 
     @GetMapping("/me/discharges")
@@ -112,7 +121,7 @@ public class UserController {
     @GetMapping("/me/balance")
     public BalanceResponse getBalance(@AuthenticationPrincipal String email){
 
-        float balance = this.userService.getMerchantTotalBalance(email);
+        float balance = this.userService.getMerchantTotalBalance(email)*100/100;
         return new
                 BalanceResponse(balance);
 

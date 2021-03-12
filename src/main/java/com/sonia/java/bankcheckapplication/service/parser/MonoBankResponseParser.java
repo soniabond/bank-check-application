@@ -34,7 +34,7 @@ public class MonoBankResponseParser implements ResponseParser {
             List<BankDischarge> bankDischarges = jsons.stream()
                     .map(MonoBankDischarge::new)
                     .collect(Collectors.toList());
-            bankDischarges.forEach(System.out::println);
+
             return bankDischarges;
 
 

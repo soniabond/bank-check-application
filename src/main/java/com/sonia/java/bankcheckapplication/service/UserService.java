@@ -191,13 +191,13 @@ public class UserService implements UserDetailsService {
         return addUserMerchant(email, merchantEntity);
     }
 
-    public CardCheckingUser addMonoBankMerchant(String email, @NotNull MonoBankMerchantRequest merchantRequest){
+    public void addMonoBankMerchant(String email, @NotNull MonoBankMerchantRequest merchantRequest){
         System.out.println(merchantRequest);
         MonoBankMerchantEntity merchantEntity =
                 MonoBankMerchantEntity.fromMonoBankMerchantRequest(merchantRequest);
         MerchantDataValidation.validate(merchantEntity);
 
-        return addUserMerchant(email, merchantEntity);
+        addUserMerchant(email, merchantEntity);
     }
 
     @Transactional
@@ -208,6 +208,7 @@ public class UserService implements UserDetailsService {
         if(user.getMerchants().contains(merchantEntity)){
             return user;
         }
+        MerchantDataValidation.validate(merchantEntity);
         user.getMerchants().add(merchantEntity);
         System.out.println(user.getMerchants());
         merchantRepository.save(merchantEntity);
@@ -217,8 +218,11 @@ public class UserService implements UserDetailsService {
 
     private Set<CategoryDischargeResponse> splitIntoCategories(List<BankDischarge> discharges){
 
-        Comparator<CategoryDischargeResponse> compCategoryByDate =
-                Comparator.comparing((CategoryDischargeResponse o) -> o.getDischarge().getTrandate());
+        Comparator<CategoryDischargeResponse> compCategoryByDate = (CategoryDischargeResponse o1,
+                                                                    CategoryDischargeResponse o2) -> (
+            o2.getDischarge().getTrandate().compareTo(o1.getDischarge().getTrandate()));
+
+
 
         Set<CategoryDischargeResponse> dischargeResponses = new TreeSet<>(compCategoryByDate);
         List<Category> categorySet = categoryRepository.findAll();
@@ -329,7 +333,7 @@ public class UserService implements UserDetailsService {
         CardCheckingUser user = this.getUser(email);
         List<Category> categories =  categoryRepository.findAll();
         Set<UserCategoryLimit> limits = user.getLimits();
-        List<UserCategoryLimitResponse> responses = categories.stream()
+       List<UserCategoryLimitResponse> responses = categories.stream()
                 .map((item) -> new UserCategoryLimitResponse(item.getName(), 0))
                 .collect(Collectors.toList());
         for(UserCategoryLimit limit: limits){
@@ -340,14 +344,30 @@ public class UserService implements UserDetailsService {
                 }
             }
         }
-        System.out.println(responses);
+
         return responses;
 
     }
 
+    @Transactional(readOnly = true)
+    public UserCategoryLimitResponse getCategoryLimit(String email, String categoryName){
+        CardCheckingUser user = this.getUser(email);
+        categoryRepository.findByName(categoryName).orElseThrow(() -> CategoryExceptions.categoryNotFound(categoryName));
+        Set<UserCategoryLimit> limits = user.getLimits();
 
+        return limits
+                .stream()
+                .filter((item) -> item.getCategory().getName().equals(categoryName))
+                .map((item) -> new UserCategoryLimitResponse(categoryName, item.getLimit()))
+                .findFirst()
+                .orElse(new UserCategoryLimitResponse(categoryName, 0));
 
     }
+
+
+
+
+}
 
 
 

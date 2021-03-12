@@ -2,10 +2,14 @@ version: '3'
 
 services:
   bank_service:
-    image: bank_app:0.0.1-SNAPSHOT
+    build:
+      context: .
     container_name: bank_app
     environment:
-      MESSAGE_DB_HOST: db
+      SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/bankapp_db
+      SPRING_DATASOURCE_PASSWORD: 3523
+      CARD_CHECKING_SECURITY_JWT_SECRET: GnBGcKJvQJ93KCVVxXxkYL7RNWqYACCaMT9pNXmx7R949KKnrFsad3GVD3VkK3Qw
+      CARD_CHECKING_SECURITY_ADMINS_SONIABOND_PASSWORD: password
     depends_on:
       - db
     ports:
