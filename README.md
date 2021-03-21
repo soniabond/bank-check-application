@@ -22,6 +22,6 @@ Technologies: Java 11, Spring Data JPA, Spring Security, Spring ORM, MySQL, Dock
 
 Check avaliable endpoint http://localhost:8080/swagger-ui/index.html
 
-![Alt text](Screenshot from 2021-03-21 21-10-28.png)
+![Alt text](https://github.com/soniabond/bank-check-application/blob/master/Screenshot%20from%202021-03-21%2021-10-28.png)
 
 
