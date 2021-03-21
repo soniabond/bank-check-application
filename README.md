@@ -18,7 +18,7 @@ Functionality, provided for admin:
 - add new admins;
 - fulfill base of category-pattern relations.
 
-Technologies: Java 11, Spring Data JPA, Spring Security, Spring ORM, MySQL, Docker, JUnit, Mockito.
+Technologies: Java 11, Spring Boot, Spring Data JPA, Spring Security, Spring ORM, MySQL, Docker, JUnit, Mockito.
 
 Check avaliable endpoint http://localhost:8080/swagger-ui/index.html
 
