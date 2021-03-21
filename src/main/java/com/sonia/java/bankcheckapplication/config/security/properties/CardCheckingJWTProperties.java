@@ -15,10 +15,10 @@ public class CardCheckingJWTProperties {
     @Min(value = 60_000)
     @Max(value = 3_600_000)
     private long expireIn;
-
     public long getExpireIn() {
         return expireIn;
     }
+
 
     public void setExpireIn(long expireIn) {
         this.expireIn = expireIn;

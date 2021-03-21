@@ -1,7 +1,7 @@
 create TABLE discharge(
-                          id bigserial primary key,
+                          id serial primary key,
                           name varchar(256),
-                          category_id serial not null,
+                          category_id bigint unsigned not null,
                           foreign key (category_id) references category(id)
 );
 

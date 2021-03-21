@@ -13,6 +13,7 @@
     <version>0.0.1-SNAPSHOT</version>
     <name>bank-check-application</name>
     <description>project for card statistics</description>
+    <packaging>jar</packaging>
 
     <properties>
         <java.version>11</java.version>
@@ -23,6 +24,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
+
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -62,8 +64,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -102,10 +104,19 @@
             <artifactId>commons-codec</artifactId>
             <version>1.9</version>
         </dependency>
+
     </dependencies>
 
     <build>
-        <plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                    <configuration>
+                        <mainClass>com.sonia.java.bankcheckapplication.BankCheckApplication</mainClass>
+                    </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.flywaydb</groupId>
                 <artifactId>flyway-maven-plugin</artifactId>
@@ -167,23 +178,19 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <mainClass>com.sonia.java.bankcheckapplication.BankCheckApplication</mainClass>
-                    <layers>
-                        <enabled>true</enabled>
-                    </layers>
-                </configuration>
-            </plugin>
+
             <plugin>
                 <groupId>org.springdoc</groupId>
                 <artifactId>springdoc-openapi-maven-plugin</artifactId>
                 <version>1.0</version>
             </plugin>
+
+
         </plugins>
+
+        </pluginManagement>
     </build>
+
 
     <profiles>
         <profile>
@@ -194,20 +201,21 @@
             <properties>
                 <!--common properties for database connection-->
                 <db.driver>oracle.jdbc.driver.OracleDriver</db.driver>
-                <db.url>jdbc:postgresql://localhost:5432/bankapp_db</db.url>
-                <db.username>postgres</db.username>
+                <db.url>jdbc:mysql://localhost:3306/bankapp_db</db.url>
+                <db.username>root</db.username>
                 <db.password>3523</db.password>
-                <db.adm.user>postgres</db.adm.user>
+                <db.adm.user>root</db.adm.user>
                 <db.adm.pass>3523</db.adm.pass>
 
                 <!-- Properties are prefixed with flyway. -->
-                <flyway.user>postgres}</flyway.user>
+                <flyway.user>root</flyway.user>
                 <flyway.password>3523</flyway.password>
-                <flyway.driver>org.postgresql.Driver</flyway.driver>
-                <flyway.url>jdbc:postgresql://localhost:5432/bankapp_db</flyway.url>
+                <flyway.driver>com.mysql.cj.jdbc.Driver</flyway.driver>
+                <flyway.url>jdbc:mysql://localhost:3306/bankapp_db</flyway.url>
                 <flyway.locations>db/migration/</flyway.locations>
             </properties>
         </profile>
     </profiles>
+
 
 </project>

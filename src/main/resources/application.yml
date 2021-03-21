@@ -18,9 +18,9 @@ card-checking:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/bankapp_db
-    driver-class-name: org.postgresql.Driver
-    username: postgres
+    url: jdbc:mysql://localhost:3306/bankapp_db
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
     password: 3523
   jpa:
     open-in-view: false
